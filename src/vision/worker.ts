@@ -26,7 +26,10 @@ env.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
   return known ? fetch(url, init) : Promise.resolve(new Response(null, { status: 404 }))
 }
 const wasm = env.backends.onnx.wasm!
-wasm.wasmPaths = { mjs: `${base}ort/ort-wasm-simd-threaded.mjs`, wasm: `${base}ort/ort-wasm-simd-threaded.wasm` }
+// Full URLs (with the origin) on purpose: Vite's dev server rewrites root-relative dynamic imports
+// and refuses to serve files from public/ that way, which broke the scanner in `npm run dev`.
+const ortBase = `${self.location.origin}${base}ort/`
+wasm.wasmPaths = { mjs: `${ortBase}ort-wasm-simd-threaded.mjs`, wasm: `${ortBase}ort-wasm-simd-threaded.wasm` }
 wasm.numThreads = 1
 wasm.proxy = false
 
