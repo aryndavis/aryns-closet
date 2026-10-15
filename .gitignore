@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+*.tsbuildinfo
+
+# Downloaded by scripts/fetch-model.mjs (checked against pinned hashes)
+public/models/
+public/ort/
+
+# Supabase keys and other local settings
+.env
+.env.*
+!.env.example

@@ -1,0 +1,71 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Layout from './components/Layout'
+import { Star, Y2KWindow } from './components/Scrapbook'
+import AddOutfit from './pages/AddOutfit'
+import Closet from './pages/Closet'
+import ItemPage from './pages/ItemPage'
+import Login from './pages/Login'
+import Lookbook from './pages/Lookbook'
+import NotFound from './pages/NotFound'
+import OutfitPage from './pages/OutfitPage'
+import Shuffle from './pages/Shuffle'
+import { ClosetProvider, useCloset } from './state/ClosetContext'
+import { ToastProvider } from './state/Toasts'
+
+/** Shows the login, loading, or error screen until the closet is ready. */
+function Gate() {
+  const { status, error, reload, signOut, mode } = useCloset()
+  if (status === 'signed-out') return <Login />
+  if (status === 'loading') {
+    return (
+      <main className="loading-page" id="main" aria-busy="true">
+        <Star className="spin-star" />
+        <p>Opening your closet…</p>
+      </main>
+    )
+  }
+  if (status === 'error') {
+    return (
+      <main className="loading-page" id="main">
+        <Y2KWindow title="error.exe" tone="pink" className="narrow">
+          <p>Couldn’t open your closet: {error}</p>
+          <div className="form-buttons">
+            <button type="button" className="cta-button" onClick={reload}>
+              Try again
+            </button>
+            {mode === 'cloud' && (
+              <button type="button" className="soft-button" onClick={() => signOut()}>
+                Sign out
+              </button>
+            )}
+          </div>
+        </Y2KWindow>
+      </main>
+    )
+  }
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<Lookbook />} />
+        <Route path="add" element={<AddOutfit />} />
+        <Route path="outfit/:id" element={<OutfitPage />} />
+        <Route path="closet" element={<Closet />} />
+        <Route path="item/:id" element={<ItemPage />} />
+        <Route path="shuffle" element={<Shuffle />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <ToastProvider>
+        <ClosetProvider>
+          <Gate />
+        </ClosetProvider>
+      </ToastProvider>
+    </BrowserRouter>
+  )
+}
