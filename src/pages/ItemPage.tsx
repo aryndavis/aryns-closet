@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Polaroid, Sparkle, Sticker, Y2KWindow } from '../components/Scrapbook'
+import { Paper, Polaroid, Sparkle, Sticker } from '../components/Scrapbook'
 import { formatDate } from '../lib/dates'
 import { CATEGORIES, CATEGORY_NAMES, type Category } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
@@ -49,7 +49,7 @@ export default function ItemPage() {
           <p className="item-meta">
             {CATEGORY_NAMES[item.category]} · {item.colorName && `${item.colorName} · `}worn {worn.length}×
           </p>
-          <Y2KWindow title="edit_item.txt" tone="pink">
+          <Paper kind="note" label="edit this piece">
             <form className="edit-form" onSubmit={save}>
               <label>
                 <span>Name</span>
@@ -101,7 +101,7 @@ export default function ItemPage() {
                 )}
               </div>
             </form>
-          </Y2KWindow>
+          </Paper>
         </div>
       </div>
 

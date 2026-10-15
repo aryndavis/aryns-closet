@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Polaroid, RansomText, Sparkle, Star, Sticker, Y2KWindow } from '../components/Scrapbook'
+import { Icon, Paper, Polaroid, RansomText, Sparkle, Star, Sticker } from '../components/Scrapbook'
 import { formatDate, monthKey, monthLabel, yearOf } from '../lib/dates'
 import type { Outfit } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
@@ -10,14 +10,14 @@ export default function Lookbook() {
   if (outfits.length === 0) {
     return (
       <div className="empty-page">
-        <Y2KWindow title="welcome.exe" tone="blue" className="empty-window">
+        <Paper kind="sticky" tone="pink" label="welcome to your lookbook!" className="empty-window">
           <RansomText text="NEW LOOKBOOK" className="big-ransom" />
           <p>Snap a mirror pic, upload it, and the closet will cut out each piece into a sticker for you.</p>
           <Link to="/add" className="cta-button">
             + Add your first outfit
           </Link>
-        </Y2KWindow>
-        <Star className="float-star s1" />
+        </Paper>
+        <Icon name="butterfly" className="float-icon s1" />
         <Sparkle className="float-sparkle s2" />
       </div>
     )
@@ -36,9 +36,9 @@ export default function Lookbook() {
       {[...months.entries()].map(([key, list]) => (
         <section key={key} className="spread" aria-labelledby={`m-${key}`}>
           <Star className="spread-deco d1" />
-          <Star className="spread-deco d2" color="pink" />
+          <Icon name="lips" className="spread-deco d2" />
           <Sparkle className="spread-deco d3" />
-          <Star className="spread-deco d4" />
+          <Icon name="heart" className="spread-deco d4" />
           <h2 id={`m-${key}`} className="spread-title">
             <RansomText text={monthLabel(key).toUpperCase()} />
             <span className="spread-year">{yearOf(key)}</span>

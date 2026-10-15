@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { RansomText, Sparkle, Star, Sticker, Y2KWindow } from '../components/Scrapbook'
+import { Icon, Paper, RansomText, Sparkle, Sticker } from '../components/Scrapbook'
 import { missingSlots, OPTIONAL_SLOTS, randomLook, SLOT_ORDER, type Look, type Shape, type Slot } from '../lib/shuffle'
 import { CATEGORY_NAMES } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
@@ -45,7 +45,7 @@ export default function Shuffle() {
     <div className="shuffle-page">
       <h1 className="page-title">
         <RansomText text="OUTFIT ROULETTE" />
-        <Star className="title-star" />
+        <Icon name="crown" className="title-icon" />
       </h1>
 
       <div className="shuffle-controls">
@@ -87,7 +87,7 @@ export default function Shuffle() {
           const isLocked = Boolean(locked[slot])
           return (
             <li key={slot}>
-              <Y2KWindow title={`${slot}.png`} tone={isLocked ? 'blue' : 'pink'}>
+              <Paper kind="card" label={CATEGORY_NAMES[slot]} seed={slot} className={isLocked ? 'is-kept' : ''}>
                 <div className="reel">
                   {item ? (
                     <Link to={`/item/${item.id}`} className="reel-item">
@@ -105,9 +105,9 @@ export default function Shuffle() {
                   disabled={!item}
                   onClick={() => setLocked((current) => ({ ...current, [slot]: isLocked ? undefined : item }))}
                 >
-                  {isLocked ? '🔒 locked' : 'lock'}
+                  {isLocked ? '♥ keeping this' : '♡ keep'}
                 </button>
-              </Y2KWindow>
+              </Paper>
             </li>
           )
         })}

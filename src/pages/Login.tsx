@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { RansomText, Sparkle, Star, Y2KWindow } from '../components/Scrapbook'
+import { Icon, Paper, RansomText, Sparkle } from '../components/Scrapbook'
 import { useCloset } from '../state/ClosetContext'
 
 export default function Login() {
@@ -23,13 +23,13 @@ export default function Login() {
 
   return (
     <main className="login-page" id="main">
-      <Star className="float-star s1" />
+      <Icon name="butterfly" className="float-icon s1" />
       <Sparkle className="float-sparkle s2" />
       <h1 className="login-logo">
         <RansomText text="ARYN'S" />
         <span className="logo-script">Closet</span>
       </h1>
-      <Y2KWindow title="members_only.exe" tone="blue" className="login-window">
+      <Paper kind="sticky" tone="pink" label="members only ♡" className="login-window">
         <form onSubmit={submit}>
           <label>
             <span>Email</span>
@@ -48,7 +48,7 @@ export default function Login() {
             {busy ? 'Opening…' : 'Open my closet'}
           </button>
         </form>
-      </Y2KWindow>
+      </Paper>
     </main>
   )
 }
