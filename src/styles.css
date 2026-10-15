@@ -18,6 +18,8 @@
   --block: 'Bungee', Impact, sans-serif;
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --gutter: clamp(16px, 3vw, 40px);
+  /* Width of the desk showing on each side of the scrapbook. */
+  --desk: clamp(56px, 7vw, 120px);
   color-scheme: light;
 }
 
@@ -1309,12 +1311,14 @@ textarea:focus-visible {
   filter: drop-shadow(3px 5px 4px rgba(43, 29, 47, 0.22));
 }
 
-.glue-stick { left: -14px; top: 26%; width: 58px; rotate: 18deg; }
-.scissors { right: -46px; top: 18%; width: 170px; rotate: -24deg; }
-.paper-clip { left: 18px; bottom: 14%; width: 30px; rotate: -12deg; }
-.lip-gloss { right: 10px; bottom: 10%; width: 46px; rotate: 16deg; }
-.desk-butterfly { left: 22px; top: 62%; width: 60px; rotate: -18deg; }
-.desk-heart { right: 26px; top: 52%; width: 52px; rotate: 10deg; }
+/* Sizes scale with the window so the supplies fit in the strip of desk beside the book,
+   peeking out from the screen edges and from under the book's corners. */
+.glue-stick { left: calc(var(--desk) * -0.15); top: 24%; width: clamp(30px, 4vw, 58px); rotate: 18deg; }
+.scissors { right: calc(var(--desk) * -0.2); top: 13%; width: clamp(96px, 12vw, 170px); rotate: -24deg; }
+.paper-clip { left: calc(var(--desk) * 0.3); bottom: 14%; width: clamp(18px, 2.2vw, 30px); rotate: -12deg; }
+.lip-gloss { right: calc(var(--desk) * 0.15); bottom: 10%; width: clamp(28px, 3.4vw, 46px); rotate: 16deg; }
+.desk-butterfly { left: calc(var(--desk) * 0.1); top: 60%; width: clamp(36px, 4.4vw, 60px); rotate: -18deg; }
+.desk-heart { right: calc(var(--desk) * 0.2); top: 50%; width: clamp(30px, 3.8vw, 52px); rotate: 10deg; }
 
 /* Keep page content above the desk. */
 .site-header,
@@ -1326,8 +1330,8 @@ main,
   z-index: 1;
 }
 
-/* Only where there's room in the margins; see issue #2 for a mobile version. */
-@media (max-width: 1380px) {
+/* Phones have no desk margin to spare; see issue #2 for a mobile version. */
+@media (max-width: 700px) {
   .craft-desk {
     display: none;
   }
@@ -1522,6 +1526,8 @@ body {
 .book {
   position: relative;
   z-index: 1;
+  /* Always leave a strip of desk on both sides for the craft supplies. */
+  width: calc(100% - 2 * var(--desk));
   max-width: 1280px;
   margin: 26px auto 36px;
   padding: 16px;
@@ -1603,7 +1609,7 @@ body {
 /* Small screens: a single page instead of a two-page spread. */
 @media (max-width: 800px) {
   .book {
-    margin: 12px 8px 24px;
+    margin: 12px auto 24px;
     padding: 8px;
   }
 
@@ -1627,4 +1633,12 @@ textarea {
 
 label > span:first-child {
   font: 600 15px var(--round);
+}
+
+/* Phones: no desk strip, the book uses the full width. */
+@media (max-width: 700px) {
+  .book {
+    width: auto;
+    margin: 12px 8px 24px;
+  }
 }
