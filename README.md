@@ -1,6 +1,6 @@
 # Aryn’s Closet ♡
 
-A Y2K, Bratz-meets-scrapbook digital closet. Upload outfit photos and they become a lookbook. Each fully visible piece of clothing is automatically cut out into a sticker and cataloged in your closet. The outfit roulette shuffles those pieces into new looks.
+A Bratz-meets-scrapbook digital closet: an open scrapbook on a desk, with glossy pink icons, tape, polaroids, and stickers. Upload outfit photos and they become a lookbook. Each fully visible piece of clothing is automatically cut out into a sticker and cataloged in your closet. The outfit roulette shuffles those pieces into new looks.
 
 - **Lookbook:** outfit photos as taped-in polaroids, grouped into monthly scrapbook spreads with ransom-note headings.
 - **Clothing scanner:** finds tops, bottoms, dresses, shoes and accessories in a photo, cuts each one out as a transparent sticker, and names its color.

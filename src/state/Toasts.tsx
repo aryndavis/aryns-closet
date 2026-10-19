@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { Icon, Tape } from '../components/Scrapbook'
 import { newId } from '../lib/ids'
 
 type Toast = { id: string; title: string; message: string; tone: 'error' | 'info' }
@@ -9,7 +10,7 @@ interface ToastValue {
 
 const ToastContext = createContext<ToastValue | null>(null)
 
-/** Little pop-up windows in the corner. They stay until you close them (× button, "Got it", or Esc). */
+/** Sticky notes taped in the corner. They stay until you close them (× button, "Got it", or Esc). */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
   const dismiss = (id: string) => setToasts((list) => list.filter((t) => t.id !== id))
@@ -35,23 +36,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         )}
         {toasts.map((toast) => (
           <div key={toast.id} className={`toast toast-${toast.tone}`} role={toast.tone === 'error' ? 'alert' : 'status'}>
-            <div className="window-bar">
-              <span>{toast.tone === 'error' ? 'error.exe' : 'note.txt'}</span>
-              <button type="button" className="window-x" aria-label={`Dismiss: ${toast.title}`} onClick={() => dismiss(toast.id)}>
-                ×
-              </button>
-            </div>
+            <Tape variant={1} className="toast-tape" />
+            <button type="button" className="toast-close" aria-label={`Dismiss: ${toast.title}`} onClick={() => dismiss(toast.id)}>
+              ×
+            </button>
             <div className="toast-body">
-              <span className="toast-icon" aria-hidden="true">
-                {toast.tone === 'error' ? '!' : '✦'}
-              </span>
+              <Icon name={toast.tone === 'error' ? 'lips' : 'butterfly'} className="toast-icon" />
               <div>
                 <p className="toast-title">{toast.title}</p>
                 <p>{toast.message}</p>
               </div>
             </div>
             <button type="button" className="toast-ok" onClick={() => dismiss(toast.id)}>
-              Got it
+              Got it <span aria-hidden="true">♡</span>
             </button>
           </div>
         ))}

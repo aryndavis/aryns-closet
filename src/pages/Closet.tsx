@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom'
-import { RansomText, Sticker, Y2KWindow } from '../components/Scrapbook'
+import { Icon, Paper, RansomText, Sticker } from '../components/Scrapbook'
 import { CATEGORIES, CATEGORY_LABELS, type Category } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
 
@@ -15,6 +15,7 @@ export default function Closet() {
     <div className="closet-page">
       <h1 className="page-title">
         <RansomText text="MY CLOSET" />
+        <Icon name="butterfly" className="title-icon" />
       </h1>
 
       <div className="tabs" role="group" aria-label="Show">
@@ -35,12 +36,12 @@ export default function Closet() {
       </div>
 
       {shown.length === 0 ? (
-        <Y2KWindow title="empty.txt" tone="blue" className="narrow">
+        <Paper kind="sticky" tone="yellow" label="nothing here yet" className="narrow">
           <p>{items.length === 0 ? 'Your closet is empty. Add an outfit photo and the pieces will show up here as stickers.' : 'Nothing in this section yet.'}</p>
           <Link to="/add" className="cta-button">
             + Add an outfit
           </Link>
-        </Y2KWindow>
+        </Paper>
       ) : (
         <ul className="sticker-board">
           {shown.map((item) => {

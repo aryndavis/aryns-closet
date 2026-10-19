@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
-import { Star, Y2KWindow } from './components/Scrapbook'
+import { CraftDesk, Icon, Paper } from './components/Scrapbook'
 import AddOutfit from './pages/AddOutfit'
 import Closet from './pages/Closet'
 import ItemPage from './pages/ItemPage'
@@ -19,7 +19,7 @@ function Gate() {
   if (status === 'loading') {
     return (
       <main className="loading-page" id="main" aria-busy="true">
-        <Star className="spin-star" />
+        <Icon name="heart" className="spin-heart" />
         <p>Opening your closet…</p>
       </main>
     )
@@ -27,7 +27,7 @@ function Gate() {
   if (status === 'error') {
     return (
       <main className="loading-page" id="main">
-        <Y2KWindow title="error.exe" tone="pink" className="narrow">
+        <Paper kind="sticky" tone="pink" label="uh oh!" className="narrow">
           <p>Couldn’t open your closet: {error}</p>
           <div className="form-buttons">
             <button type="button" className="cta-button" onClick={reload}>
@@ -39,7 +39,7 @@ function Gate() {
               </button>
             )}
           </div>
-        </Y2KWindow>
+        </Paper>
       </main>
     )
   }
@@ -61,6 +61,7 @@ function Gate() {
 export default function App() {
   return (
     <BrowserRouter>
+      <CraftDesk />
       <ToastProvider>
         <ClosetProvider>
           <Gate />

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Polaroid, RansomText, Sparkle, Y2KWindow } from '../components/Scrapbook'
+import { Icon, Paper, Polaroid, RansomText } from '../components/Scrapbook'
 import { today } from '../lib/dates'
 import { preparePhoto } from '../lib/images'
 import { CATEGORIES, CATEGORY_NAMES, type Category } from '../lib/types'
@@ -152,11 +152,11 @@ export default function AddOutfit() {
     <div className="add-page">
       <h1 className="page-title">
         <RansomText text="NEW FIT" />
-        <Sparkle className="title-sparkle" />
+        <Icon name="heel" className="title-icon" />
       </h1>
 
       {step.name === 'pick' && (
-        <Y2KWindow title="upload.exe" tone="blue" className="upload-window">
+        <Paper kind="kraft" label="paste a new fit in here" className="upload-window">
           <label
             className={`dropzone${dragging ? ' is-dragging' : ''}`}
             onDragOver={(e) => {
@@ -174,11 +174,11 @@ export default function AddOutfit() {
             <span>or drag it here. Full-length mirror pics work best!</span>
           </label>
           <p className="fineprint">Photos are scanned right here on your device. Location data is removed before saving.</p>
-        </Y2KWindow>
+        </Paper>
       )}
 
       {step.name === 'scanning' && (
-        <Y2KWindow title="scanning.exe" tone="pink" className="scan-window">
+        <Paper kind="note" label="cutting out your pieces…" className="scan-window">
           <div className="scan-row">
             {photoUrl && <Polaroid src={photoUrl} alt="Your outfit photo" seed="scan" className="scan-polaroid is-scanning" />}
             <div className="scan-status" role="status">
@@ -195,7 +195,7 @@ export default function AddOutfit() {
               </div>
             </div>
           </div>
-        </Y2KWindow>
+        </Paper>
       )}
 
       {step.name === 'review' && (
@@ -222,7 +222,7 @@ export default function AddOutfit() {
                 const sameCategory = items.filter((item) => item.category === draft.category)
                 return (
                   <li key={draft.key} className={draft.include ? '' : 'is-skipped'}>
-                    <Y2KWindow title={`item_${i + 1}.png`} tone={i % 2 ? 'blue' : 'pink'}>
+                    <Paper kind="card" label={`piece #${i + 1}`} seed={draft.key}>
                       <div className="draft">
                         <span className="sticker sticker-md">
                           <img src={draft.previewUrl} alt="" />
@@ -269,7 +269,7 @@ export default function AddOutfit() {
                           </label>
                         </div>
                       </div>
-                    </Y2KWindow>
+                    </Paper>
                   </li>
                 )
               })}

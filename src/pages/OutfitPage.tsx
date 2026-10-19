@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Polaroid, Star, Sticker, Tape, Y2KWindow } from '../components/Scrapbook'
+import { Icon, Paper, Polaroid, Sticker, Tape } from '../components/Scrapbook'
 import { formatDate, today } from '../lib/dates'
 import { CATEGORY_NAMES } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
@@ -40,7 +40,7 @@ export default function OutfitPage() {
       <div className="outfit-layout">
         <div className="outfit-photo">
           <Polaroid src={imageUrl(outfit.photoPath)} alt={`Outfit worn ${formatDate(outfit.wornOn)}`} seed={outfit.id} className="polaroid-large" caption={outfit.caption || 'fit check'} />
-          <Star className="corner-star" />
+          <Icon name="heart" className="corner-icon" />
         </div>
 
         <div className="outfit-info">
@@ -75,7 +75,7 @@ export default function OutfitPage() {
             </p>
           )}
 
-          <Y2KWindow title="pieces_in_this_fit.txt" tone="blue">
+          <Paper kind="note" label="pieces in this fit">
             {pieces.length === 0 ? (
               <p>No pieces tagged in this outfit.</p>
             ) : (
@@ -93,7 +93,7 @@ export default function OutfitPage() {
                 ))}
               </ul>
             )}
-          </Y2KWindow>
+          </Paper>
 
           <div className="form-buttons">
             {!editing && (
