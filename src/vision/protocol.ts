@@ -18,7 +18,8 @@ export interface Rejection {
   reason: string
 }
 
-export type ScanRequest = { id: number; image: ImageBitmap }
+/** Messages from the page to the worker. */
+export type WorkerRequest = { type: 'scan'; id: number; image: ImageBitmap } | { type: 'cancel'; id: number }
 
 export type ScanMessage =
   | { id: number; type: 'progress'; stage: 'loading-model' | 'scanning'; percent: number | null }
