@@ -7,7 +7,7 @@ import { CATEGORIES, CATEGORY_NAMES, type Category } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
 import { useToasts } from '../state/Toasts'
 import type { Detection } from '../vision/protocol'
-import { scanOutfit, type ScanProgress } from '../vision/scanner'
+import { isScanCancelled, scanOutfit, type ScanProgress } from '../vision/scanner'
 
 type Draft = {
   key: string
@@ -34,6 +34,14 @@ export default function AddOutfit() {
   const [saving, setSaving] = useState(false)
   const [dragging, setDragging] = useState(false)
   const scanRun = useRef(0)
+  // Cancels the scan in progress when a new photo is picked or the page closes.
+  const scanAbort = useRef<AbortController | null>(null)
+  const cancelScan = () => {
+    scanRun.current++
+    scanAbort.current?.abort()
+    scanAbort.current = null
+  }
+  useEffect(() => cancelScan, [])
 
   const photoUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : undefined), [photo])
   useEffect(() => () => void (photoUrl && URL.revokeObjectURL(photoUrl)), [photoUrl])
@@ -47,21 +55,30 @@ export default function AddOutfit() {
 
   const start = async (file: File | undefined) => {
     if (!file) return
-    const run = ++scanRun.current
+    cancelScan()
+    const run = scanRun.current
+    const controller = new AbortController()
+    scanAbort.current = controller
     let prepared: Blob
     try {
       prepared = await preparePhoto(file)
     } catch (e) {
-      notify({ tone: 'error', title: 'Couldn’t use that photo', message: (e as Error).message })
+      if (run === scanRun.current) notify({ tone: 'error', title: 'Couldn’t use that photo', message: (e as Error).message })
       return
     }
+    // Another photo may have been picked while this one was being prepared.
+    if (run !== scanRun.current) return
     setPhoto(prepared)
     setDrafts([])
     setStep({ name: 'scanning', progress: null })
     try {
-      const { detections, rejections } = await scanOutfit(prepared, (progress) => {
-        if (run === scanRun.current) setStep({ name: 'scanning', progress })
-      })
+      const { detections, rejections } = await scanOutfit(
+        prepared,
+        (progress) => {
+          if (run === scanRun.current) setStep({ name: 'scanning', progress })
+        },
+        controller.signal,
+      )
       if (run !== scanRun.current) return
       releasePreviews()
       setDrafts(
@@ -86,7 +103,7 @@ export default function AddOutfit() {
         notify({ tone: 'info', title: 'No clothes spotted', message: 'The scanner didn’t find any pieces, but you can still save the photo to your lookbook.' })
       }
     } catch (e) {
-      if (run !== scanRun.current) return
+      if (isScanCancelled(e) || run !== scanRun.current) return
       notify({ tone: 'error', title: 'The clothing scanner hit a snag', message: `${(e as Error).message} You can still save the photo to your lookbook.` })
     }
     setStep({ name: 'review' })
@@ -266,7 +283,7 @@ export default function AddOutfit() {
                 className="soft-button"
                 disabled={saving}
                 onClick={() => {
-                  scanRun.current++
+                  cancelScan()
                   setPhoto(null)
                   setDrafts([])
                   setStep({ name: 'pick' })

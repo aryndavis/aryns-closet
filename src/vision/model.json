@@ -1,0 +1,10 @@
+{
+  "model": "Xenova/segformer_b0_clothes",
+  "revision": "a2489ea8e7ec1ee912190546bad31a4906ccca76",
+  "files": {
+    "config.json": "627e2743a73957d0445b5796c4c533435d5d5b049218580909aa3c4a13997cd0",
+    "preprocessor_config.json": "e5a25d8fc054bf780be930e161b47d188bec1b0bf0a44fd5fdfb3f3312c0be0b",
+    "onnx/model.onnx": "02e6f1545475bc549184b6710487555b4b73eb08354cc3a480fb4fab1473a9d3"
+  },
+  "ortFiles": ["ort-wasm-simd-threaded.mjs", "ort-wasm-simd-threaded.wasm"]
+}

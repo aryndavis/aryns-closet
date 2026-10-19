@@ -3,19 +3,23 @@
 import { env, pipeline, RawImage, type ImageSegmentationPipeline } from '@huggingface/transformers'
 import type { Category } from '../lib/types'
 import { colorName, dominantColor, toHex } from './colors'
-import type { Detection, Rejection, ScanMessage, ScanRequest } from './protocol'
+import modelConfig from './model.json'
+import type { Detection, Rejection, ScanMessage, WorkerRequest } from './protocol'
 
-const MODEL = 'Xenova/segformer_b0_clothes'
+const MODEL = modelConfig.model
 const base = import.meta.env.BASE_URL
-const modelDir = `${base}models/${MODEL}/`
+// Files live under the pinned revision (see scripts/fetch-model.mjs), so the library's browser cache,
+// which is keyed by URL, can never serve an old revision's model after an update.
+const modelsRoot = `${base}models/${modelConfig.revision}/`
+const modelDir = `${modelsRoot}${MODEL}/`
 /** The only model files that exist (downloaded and checksummed by scripts/fetch-model.mjs). */
-const MODEL_FILES = new Set(['config.json', 'preprocessor_config.json', 'onnx/model.onnx'])
+const MODEL_FILES = new Set(Object.keys(modelConfig.files))
 
 // Everything is served by this app; never fetch models or code from elsewhere.
 env.allowRemoteModels = false
 env.allowLocalModels = true
 // A path, not a full URL: the library only checks whether local files exist when given a path.
-env.localModelPath = `${base}models/`
+env.localModelPath = modelsRoot
 env.useWasmCache = false
 // The library probes for optional files (tokenizer, processor config…). Static hosts answer unknown paths
 // with the app's index.html and a 200, which would be mistaken for those files, so only the known model
@@ -28,8 +32,9 @@ env.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
 const wasm = env.backends.onnx.wasm!
 // Full URLs (with the origin) on purpose: Vite's dev server rewrites root-relative dynamic imports
 // and refuses to serve files from public/ that way, which broke the scanner in `npm run dev`.
-const ortBase = `${self.location.origin}${base}ort/`
-wasm.wasmPaths = { mjs: `${ortBase}ort-wasm-simd-threaded.mjs`, wasm: `${ortBase}ort-wasm-simd-threaded.wasm` }
+const ortBase = new URL(`${base}ort/`, self.location.origin).href
+const [ortMjs, ortWasm] = modelConfig.ortFiles
+wasm.wasmPaths = { mjs: `${ortBase}${ortMjs}`, wasm: `${ortBase}${ortWasm}` }
 wasm.numThreads = 1
 wasm.proxy = false
 
@@ -57,46 +62,79 @@ const GROUPS: Group[] = [
 const NOISE_AREA = 0.0008
 
 let segmenter: Promise<ImageSegmentationPipeline> | null = null
+/** Scans waiting for the model to load; each one is sent the download progress. */
+const waitingForModel = new Set<number>()
 
-function loadModel(id: number) {
-  segmenter ??= pipeline('image-segmentation', MODEL, {
+const createPipeline = () =>
+  pipeline('image-segmentation', MODEL, {
     device: 'wasm',
     dtype: 'fp32',
     progress_callback: (event: { status: string; progress?: number }) => {
-      if (event.status === 'progress') post({ id, type: 'progress', stage: 'loading-model', percent: event.progress ?? null })
+      // 'progress_total' covers all model files; per-file 'progress' events restart at 0 for each file.
+      if (event.status !== 'progress_total') return
+      for (const waiting of waitingForModel) post({ id: waiting, type: 'progress', stage: 'loading-model', percent: event.progress ?? null })
     },
   }) as Promise<ImageSegmentationPipeline>
-  return segmenter
+
+async function loadModel(id: number) {
+  segmenter ??= createPipeline()
+    // A dropped connection or a half-written cache entry can break the first load. Clear the library's
+    // browser cache and try once more before giving up.
+    .catch(async () => {
+      await self.caches?.delete('transformers-cache').catch(() => false)
+      return createPipeline()
+    })
+    .catch((error: unknown) => {
+      // Don't keep a failed load: the next scan should try again.
+      segmenter = null
+      throw error
+    })
+  waitingForModel.add(id)
+  try {
+    return await segmenter
+  } finally {
+    waitingForModel.delete(id)
+  }
 }
 
 const post = (message: ScanMessage) => self.postMessage(message)
+
+/** Scans the page no longer wants (a new photo was picked, or the page closed). */
+const cancelled = new Set<number>()
+class Cancelled extends Error {}
+const stopIfCancelled = (id: number) => {
+  if (cancelled.has(id)) throw new Cancelled()
+}
 
 /** Keep only sizable connected blobs, dropping specks the model mislabels. */
 function cleanMask(mask: Uint8Array, w: number, h: number) {
   const component = new Int32Array(w * h).fill(-1)
   const sizes: number[] = []
   const stack: number[] = []
+  const visit = (n: number, label: number) => {
+    if (mask[n] && component[n] === -1) {
+      component[n] = label
+      stack.push(n)
+    }
+  }
   for (let start = 0; start < mask.length; start++) {
     if (!mask[start] || component[start] !== -1) continue
     const label = sizes.length
     let size = 0
-    stack.push(start)
-    component[start] = label
+    visit(start, label)
     while (stack.length) {
       const p = stack.pop()!
       size++
       const x = p % w
-      const neighbors = [p - w, p + w, x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1]
-      for (const n of neighbors) {
-        if (n >= 0 && n < mask.length && mask[n] && component[n] === -1) {
-          component[n] = label
-          stack.push(n)
-        }
-      }
+      if (p >= w) visit(p - w, label)
+      if (p + w < mask.length) visit(p + w, label)
+      if (x > 0) visit(p - 1, label)
+      if (x < w - 1) visit(p + 1, label)
     }
     sizes.push(size)
   }
-  const largest = Math.max(0, ...sizes)
+  // A loop, not Math.max(...sizes): spreading a very noisy mask's components can overflow the call stack.
+  const largest = sizes.reduce((a, b) => Math.max(a, b), 0)
   const keep = sizes.map((s) => s >= largest * 0.15 && s >= w * h * NOISE_AREA)
   const cleaned = new Uint8Array(w * h)
   for (let i = 0; i < mask.length; i++) if (component[i] >= 0 && keep[component[i]]) cleaned[i] = 1
@@ -147,11 +185,13 @@ async function makeCutout(bitmap: ImageBitmap, mask: Uint8Array, w: number, h: n
   maskCanvas.getContext('2d')!.putImageData(maskData, 0, 0)
 
   // Cut the same region from the full-resolution photo, capped at 640px.
-  const scale = bitmap.width / w
-  const sx = x0 * scale
-  const sy = y0 * scale
-  const sw = bw * scale
-  const sh = bh * scale
+  // Separate x/y scales: the scan size was rounded per side, so the two ratios can differ.
+  const scaleX = bitmap.width / w
+  const scaleY = bitmap.height / h
+  const sx = x0 * scaleX
+  const sy = y0 * scaleY
+  const sw = bw * scaleX
+  const sh = bh * scaleY
   const outScale = Math.min(1, 640 / Math.max(sw, sh))
   const out = new OffscreenCanvas(Math.max(1, Math.round(sw * outScale)), Math.max(1, Math.round(sh * outScale)))
   const ctx = out.getContext('2d')!
@@ -162,8 +202,9 @@ async function makeCutout(bitmap: ImageBitmap, mask: Uint8Array, w: number, h: n
   return out.convertToBlob({ type: 'image/png' })
 }
 
-async function scan({ id, image }: ScanRequest) {
+async function scan(id: number, image: ImageBitmap) {
   const model = await loadModel(id)
+  stopIfCancelled(id)
   post({ id, type: 'progress', stage: 'scanning', percent: null })
 
   const scale = Math.min(1, SCAN_SIZE / Math.max(image.width, image.height))
@@ -175,6 +216,7 @@ async function scan({ id, image }: ScanRequest) {
   const pixels = ctx.getImageData(0, 0, w, h)
 
   const segments = await model(new RawImage(pixels.data, w, h, 4).rgb())
+  stopIfCancelled(id)
   const labelMasks = new Map<string, Uint8Array>()
   for (const segment of segments) {
     const data = segment.mask.data
@@ -194,7 +236,7 @@ async function scan({ id, image }: ScanRequest) {
 
   // If anything worn on the legs runs off the bottom of the photo, the feet aren't in frame,
   // so any "shoes" the model sees are something else (bags, cameras, hands…).
-  const lowerBody = measure(union(['Pants', 'Skirt', 'Dress', 'Left-leg', 'Right-leg']), w, h)
+  const lowerBody = measure(cleanMask(union(['Pants', 'Skirt', 'Dress', 'Left-leg', 'Right-leg']), w, h), w, h)
   const feetOutOfFrame = lowerBody.edges.bottom > EDGE_TOLERANCE
 
   const detections: Detection[] = []
@@ -228,6 +270,7 @@ async function scan({ id, image }: ScanRequest) {
       if (seen++ % step === 0) samples.push([pixels.data[i * 4], pixels.data[i * 4 + 1], pixels.data[i * 4 + 2]])
     }
     const color = dominantColor(samples)
+    stopIfCancelled(id)
 
     detections.push({
       category: group.category,
@@ -239,12 +282,25 @@ async function scan({ id, image }: ScanRequest) {
     })
   }
 
-  image.close()
   post({ id, type: 'result', detections, rejections })
 }
 
-self.onmessage = (event: MessageEvent<ScanRequest>) => {
-  scan(event.data).catch((error: unknown) => {
-    post({ id: event.data.id, type: 'error', message: error instanceof Error ? error.message : String(error) })
-  })
+self.onmessage = (event: MessageEvent<WorkerRequest>) => {
+  const request = event.data
+  if (request.type === 'cancel') {
+    cancelled.add(request.id)
+    return
+  }
+  const { id, image } = request
+  scan(id, image)
+    .catch((error: unknown) => {
+      // A cancelled scan's page has already moved on, so it gets no reply.
+      if (error instanceof Cancelled) return
+      post({ id, type: 'error', message: error instanceof Error ? error.message : String(error) })
+    })
+    .finally(() => {
+      // Release the decoded photo whether or not the scan worked.
+      image.close()
+      cancelled.delete(id)
+    })
 }
