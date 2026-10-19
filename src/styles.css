@@ -3,6 +3,8 @@
   --paper: #fff4fa;
   --grid: rgba(255, 140, 200, 0.22);
   --hot: #ff3d9a;
+  /* Darker pink for small or thin text: --hot fails contrast on white, cream, and the sticky notes. */
+  --hot-deep: #c21f7a;
   --baby: #ffc9e6;
   --sky: #9fd0ff;
   --sky-deep: #5aa8f5;
@@ -23,6 +25,14 @@
   color-scheme: light;
 }
 
+/* Per-element tilt for paper, polaroids, stickers, and ransom letters. It must not inherit,
+   or anything inside a tilted piece (like a sticker on a paper card) picks up its parent's tilt. */
+@property --tilt {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
 *,
 *::before,
 *::after {
@@ -30,18 +40,20 @@
 }
 
 html {
-  background: var(--paper);
+  background: #c98f62;
 }
 
+/* Warm wooden desk: planks, grain, and a soft lamp glow. */
 body {
   margin: 0;
   min-height: 100svh;
-  background-color: var(--paper);
+  background-color: #c98f62;
   background-image:
-    radial-gradient(rgba(255, 61, 154, 0.12) 1.2px, transparent 1.4px),
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 9px 9px, 30px 30px, 30px 30px;
+    radial-gradient(ellipse at 50% 0%, rgba(255, 236, 214, 0.45), transparent 60%),
+    repeating-linear-gradient(90deg, transparent 0 238px, rgba(70, 35, 15, 0.35) 238px 240px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 3px, transparent 3px 11px),
+    repeating-linear-gradient(92deg, rgba(90, 45, 20, 0.08) 0 1px, transparent 1px 17px),
+    repeating-radial-gradient(ellipse at 30% 40%, rgba(110, 60, 25, 0.07) 0 6px, transparent 6px 26px);
   color: var(--ink);
   font: 16px/1.5 var(--sans);
 }
@@ -114,17 +126,18 @@ label {
 }
 
 label > span:first-child {
-  font: 15px var(--round);
+  font: 600 15px var(--round);
 }
 
+/* Rounded, inked outlines to match the paper, with a pink focus ring. */
 input,
 select,
 textarea {
   width: 100%;
   padding: 9px 11px;
-  border: 2px solid var(--sky-deep);
-  border-radius: 0;
-  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: #fffdf9;
   color: var(--ink);
   font: 16px var(--sans);
 }
@@ -230,11 +243,14 @@ textarea:focus-visible {
 }
 
 .site-footer {
-  padding: 22px var(--gutter);
-  border-top: 2px solid var(--ink);
-  background: var(--baby);
+  width: fit-content;
+  margin: 0 auto 30px;
+  padding: 10px 26px;
+  background: var(--cream);
+  box-shadow: 0 8px 14px rgba(40, 18, 8, 0.3);
   font: 1.6rem var(--hand);
   text-align: center;
+  rotate: -1.5deg;
 }
 
 /* ---------- Scrapbook pieces ---------- */
@@ -286,7 +302,6 @@ textarea:focus-visible {
 }
 
 .star-gold path { fill: var(--gold); stroke: #b98a12; stroke-width: 0.8; }
-.star-pink path { fill: var(--baby); stroke: var(--hot); stroke-width: 0.8; }
 
 .deco-sparkle {
   width: 34px;
@@ -435,17 +450,16 @@ textarea:focus-visible {
 
 /* ---------- Lookbook ---------- */
 
+/* Monthly spreads sit right on the book's own pages, divided by a stitched line. */
 .spread {
   position: relative;
   margin: 26px 0 56px;
-  padding: clamp(18px, 3vw, 36px);
-  background-color: var(--cream);
-  background-image:
-    linear-gradient(90deg, transparent calc(50% - 10px), rgba(43, 29, 47, 0.08) 50%, transparent calc(50% + 10px)),
-    linear-gradient(rgba(90, 168, 245, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(90, 168, 245, 0.16) 1px, transparent 1px);
-  background-size: 100% 100%, 22px 22px, 22px 22px;
-  box-shadow: 0 16px 40px rgba(43, 29, 47, 0.16);
+  padding: 0 0 12px;
+  border-bottom: 2px dashed rgba(255, 61, 154, 0.35);
+}
+
+.spread:last-child {
+  border-bottom: 0;
 }
 
 .spread-deco {
@@ -626,7 +640,7 @@ textarea:focus-visible {
 }
 
 .scan-label {
-  font: 1.1rem var(--round);
+  font: 1.7rem/1.1 var(--hand);
 }
 
 .review {
@@ -910,8 +924,6 @@ textarea:focus-visible {
   fill: var(--white);
 }
 
-/* ---------- Toasts ---------- */
-
 /* ---------- Login & loading ---------- */
 
 .login-page,
@@ -936,11 +948,11 @@ textarea:focus-visible {
   width: min(100%, 400px);
 }
 
-@keyframes spin {
-  to { rotate: 360deg; }
-}
-
-.loading-page p {
+/* Only the "Opening your closet…" line, not the paragraphs inside the error screen's sticky note. */
+.loading-page > p {
+  padding: 6px 16px;
+  background: var(--cream);
+  box-shadow: 0 6px 12px rgba(40, 18, 8, 0.25);
   font: 1.3rem var(--round);
 }
 
@@ -959,21 +971,8 @@ textarea:focus-visible {
     margin-right: 0;
   }
 
-  .spread {
-    padding: 18px;
-  }
-
   .peek-stickers {
     right: -8px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
   }
 }
 
@@ -1069,7 +1068,8 @@ textarea:focus-visible {
   to { translate: -100% 0; }
 }
 
-.logo-crown {
+/* Two classes so it beats the generic .bratz-icon size further down. */
+.logo .logo-crown {
   position: absolute;
   top: -22px;
   left: 40px;
@@ -1077,7 +1077,12 @@ textarea:focus-visible {
   rotate: -14deg;
 }
 
-/* Nav links as paper tags tied on with string. */
+/* Nav links as paper tags tied on with string. The shadow lives on the nav: a filter on the
+   clipped link itself would be clipped away along with it. */
+.main-nav {
+  filter: drop-shadow(1px 2px 0 rgba(43, 29, 47, 0.25));
+}
+
 .main-nav a {
   position: relative;
   display: inline-flex;
@@ -1089,8 +1094,12 @@ textarea:focus-visible {
   font: 600 16px var(--round);
   text-decoration: none;
   clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
-  filter: drop-shadow(1px 2px 0 rgba(43, 29, 47, 0.25));
   rotate: -2deg;
+}
+
+/* clip-path also clips anything drawn outside the tag, so pull the focus ring inside it. */
+.main-nav a:focus-visible {
+  outline-offset: -3px;
 }
 
 .main-nav a:nth-child(2) { rotate: 1.5deg; }
@@ -1124,7 +1133,7 @@ textarea:focus-visible {
   height: 24px;
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--hot);
+  background: var(--hot-deep);
   color: var(--white);
   font: 600 13px/1 var(--round);
 }
@@ -1154,7 +1163,7 @@ textarea:focus-visible {
 
 .tab[aria-pressed='true'] .count {
   background: var(--white);
-  color: var(--hot);
+  color: var(--hot-deep);
 }
 
 .tab:disabled {
@@ -1190,7 +1199,7 @@ textarea:focus-visible {
 .paper-label {
   margin: 0 0 12px;
   font: 1.9rem/1 var(--hand);
-  color: var(--hot);
+  color: var(--hot-deep);
 }
 
 /* Notebook page with a torn top edge, ruled lines, and a margin line. */
@@ -1201,11 +1210,20 @@ textarea:focus-visible {
     linear-gradient(90deg, transparent 34px, rgba(255, 61, 154, 0.45) 34px 36px, transparent 36px),
     linear-gradient(transparent 27px, rgba(90, 168, 245, 0.28) 27px 28px);
   background-size: 100% 100%, 100% 28px;
-  clip-path: polygon(0 6px, 4% 0, 8% 5px, 13% 1px, 18% 6px, 24% 0, 30% 5px, 36% 1px, 42% 6px, 48% 0, 54% 5px, 60% 1px, 66% 6px, 72% 0, 78% 5px, 84% 1px, 90% 6px, 95% 0, 100% 5px, 100% 100%, 0 100%);
 }
 
-.paper-note .paper-tape {
-  display: none;
+/* Torn top edge: a zig-zag strip above the page. Drawn as its own layer (instead of clipping the
+   page) so the paper keeps its drop shadow. */
+.paper-note::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background:
+    linear-gradient(135deg, #fffdf7 4px, transparent 4.5px) 0 100% / 9px 8px repeat-x,
+    linear-gradient(225deg, #fffdf7 4px, transparent 4.5px) 0 100% / 9px 8px repeat-x;
 }
 
 .paper-sticky {
@@ -1215,8 +1233,6 @@ textarea:focus-visible {
 
 .sticky-pink { background: #ffd1ea; }
 .sticky-yellow { background: #fff3a8; }
-.sticky-blue { background: #d4e9ff; }
-.sticky-mint { background: #d3f5e7; }
 
 .paper-kraft {
   background-color: #d9bc8c;
@@ -1233,11 +1249,6 @@ textarea:focus-visible {
   background: var(--cream);
   outline: 2px dashed rgba(255, 61, 154, 0.55);
   outline-offset: -10px;
-}
-
-.paper-ticket {
-  background: #ffd9b8;
-  clip-path: polygon(0 0, 100% 0, 100% 35%, 96% 50%, 100% 65%, 100% 100%, 0 100%, 0 65%, 4% 50%, 0 35%);
 }
 
 /* Glossy Bratz-style icons */
@@ -1281,10 +1292,15 @@ textarea:focus-visible {
   rotate: 14deg;
 }
 
-.float-icon {
+.float-icon,
+.float-sparkle {
   position: absolute;
   width: 70px;
   animation: float 3s ease-in-out infinite alternate;
+}
+
+.float-sparkle {
+  width: 60px;
 }
 
 .spin-heart {
@@ -1363,10 +1379,6 @@ main,
 
 @keyframes shuttle {
   to { translate: 150% 0; }
-}
-
-.scan-label {
-  font: 1.7rem/1.1 var(--hand);
 }
 
 /* ---------- Shuffle "keep" hearts ---------- */
@@ -1503,25 +1515,14 @@ main,
     animation: none !important;
     transition: none !important;
   }
+
+  /* Without the scroll, the ticker's lead-in padding would leave its message off-screen. */
+  .ticker span {
+    padding-left: 0;
+  }
 }
 
 /* ---------- The desk and the open scrapbook ---------- */
-
-html,
-body {
-  background-color: #c98f62;
-}
-
-/* Warm wooden desk: planks, grain, and a soft lamp glow. */
-body {
-  background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(255, 236, 214, 0.45), transparent 60%),
-    repeating-linear-gradient(90deg, transparent 0 238px, rgba(70, 35, 15, 0.35) 238px 240px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 3px, transparent 3px 11px),
-    repeating-linear-gradient(92deg, rgba(90, 45, 20, 0.08) 0 1px, transparent 1px 17px),
-    repeating-radial-gradient(ellipse at 30% 40%, rgba(110, 60, 25, 0.07) 0 6px, transparent 6px 26px);
-  background-size: auto;
-}
 
 .book {
   position: relative;
@@ -1566,46 +1567,6 @@ body {
   max-width: none;
 }
 
-/* Lookbook spreads now sit on the book's own pages. */
-.spread {
-  background: none;
-  box-shadow: none;
-  padding: 0 0 12px;
-  border-bottom: 2px dashed rgba(255, 61, 154, 0.35);
-}
-
-.spread:last-child {
-  border-bottom: 0;
-}
-
-.site-footer {
-  position: relative;
-  z-index: 1;
-  width: fit-content;
-  margin: 0 auto 30px;
-  padding: 10px 26px;
-  border: 0;
-  background: var(--cream);
-  box-shadow: 0 8px 14px rgba(40, 18, 8, 0.3);
-  rotate: -1.5deg;
-}
-
-.ticker {
-  position: relative;
-  z-index: 1;
-}
-
-.login-page,
-.loading-page {
-  z-index: 1;
-}
-
-.loading-page p {
-  padding: 6px 16px;
-  background: var(--cream);
-  box-shadow: 0 6px 12px rgba(40, 18, 8, 0.25);
-}
-
 /* Small screens: a single page instead of a two-page spread. */
 @media (max-width: 800px) {
   .book {
@@ -1620,19 +1581,6 @@ body {
       linear-gradient(90deg, var(--grid) 1px, transparent 1px);
     background-size: 9px 9px, 30px 30px, 30px 30px;
   }
-}
-
-/* Form fields to match the paper: rounded, inked outlines, pink focus. */
-input,
-select,
-textarea {
-  border: 2px solid var(--ink);
-  border-radius: 12px;
-  background: #fffdf9;
-}
-
-label > span:first-child {
-  font: 600 15px var(--round);
 }
 
 /* Phones: no desk strip, the book uses the full width. */

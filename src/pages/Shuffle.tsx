@@ -105,7 +105,7 @@ export default function Shuffle() {
                   disabled={!item}
                   onClick={() => setLocked((current) => ({ ...current, [slot]: isLocked ? undefined : item }))}
                 >
-                  {isLocked ? '♥ keeping this' : '♡ keep'}
+                  <span aria-hidden="true">{isLocked ? '♥' : '♡'}</span> {isLocked ? 'keeping this' : 'keep'}
                 </button>
               </Paper>
             </li>

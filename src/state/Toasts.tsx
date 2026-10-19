@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
-import { Icon } from '../components/Scrapbook'
+import { Icon, Tape } from '../components/Scrapbook'
 import { newId } from '../lib/ids'
 
 type Toast = { id: string; title: string; message: string; tone: 'error' | 'info' }
@@ -36,7 +36,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         )}
         {toasts.map((toast) => (
           <div key={toast.id} className={`toast toast-${toast.tone}`} role={toast.tone === 'error' ? 'alert' : 'status'}>
-            <span className="tape tape-1 toast-tape" aria-hidden="true" />
+            <Tape variant={1} className="toast-tape" />
             <button type="button" className="toast-close" aria-label={`Dismiss: ${toast.title}`} onClick={() => dismiss(toast.id)}>
               ×
             </button>
@@ -48,7 +48,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </div>
             </div>
             <button type="button" className="toast-ok" onClick={() => dismiss(toast.id)}>
-              Got it ♡
+              Got it <span aria-hidden="true">♡</span>
             </button>
           </div>
         ))}

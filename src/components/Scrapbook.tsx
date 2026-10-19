@@ -31,9 +31,9 @@ export function Tape({ variant = 0, className = '' }: { variant?: number; classN
   return <span className={`tape tape-${variant % 4} ${className}`} aria-hidden="true" />
 }
 
-export function Star({ className = '', color = 'gold' }: { className?: string; color?: 'gold' | 'pink' }) {
+export function Star({ className = '' }: { className?: string }) {
   return (
-    <svg className={`deco-star star-${color} ${className}`} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <svg className={`deco-star star-gold ${className}`} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6 5.6 21.1 7 14l-5.3-5 7.2-.9z" />
     </svg>
   )
@@ -47,47 +47,52 @@ export function Sparkle({ className = '' }: { className?: string }) {
   )
 }
 
-export type IconName = 'heart' | 'lips' | 'butterfly' | 'crown' | 'heel' | 'cherry'
+export type IconName = 'heart' | 'lips' | 'butterfly' | 'crown' | 'heel'
 
-const ICON_PATHS: Record<IconName, ReactNode> = {
-  heart: <path d="M32 57C10 41 4 29 8 18c4-10 18-12 24 0 6-12 20-10 24 0 4 11-2 23-24 39z" />,
-  lips: (
-    <>
-      <path d="M4 31c10-13 20-13 28-7 8-6 18-6 28 7-10 4-20 4-28 2-8 2-18 2-28-2z" />
-      <path d="M4 31c10 4 20 4 28 2 8 2 18 2 28-2-8 16-20 20-28 20S12 47 4 31z" />
-      <path className="icon-line" d="M8 31c10 3 18 3 24 1 6 2 14 2 24-1" />
-    </>
-  ),
-  butterfly: (
-    <>
-      <path d="M31 30C20 6 4 8 6 22c2 10 15 12 25 8z" />
-      <path d="M33 30C44 6 60 8 58 22c-2 10-15 12-25 8z" />
-      <path d="M31 33c-10 1-21 9-17 19 4 8 15-1 17-17z" />
-      <path d="M33 33c10 1 21 9 17 19-4 8-15-1-17-17z" />
-      <rect x="29.5" y="20" width="5" height="28" rx="2.5" />
-      <path className="icon-line" d="M31 21c-2-6-6-9-9-10M33 21c2-6 6-9 9-10" />
-    </>
-  ),
-  crown: (
-    <>
-      <path d="M8 46l4-28 12 14 8-20 8 20 12-14 4 28z" />
-      <rect x="8" y="46" width="48" height="8" rx="3" />
-      <circle cx="32" cy="38" r="3.5" className="icon-gem" />
-    </>
-  ),
-  heel: <path d="M5 45c0-8 7-10 13-8 11 4 19-6 27-15 4-4 10-4 13 0v6c-6 0-8 4-8 12l-2 16h-4V42c-5 5-15 9-25 9H9c-3 0-4-2-4-6z" />,
-  cherry: (
-    <>
-      <path className="icon-line" d="M22 40c2-14 10-26 24-32M42 40c-2-10 0-22 4-32" />
-      <circle cx="21" cy="46" r="11" />
-      <circle cx="43" cy="44" r="11" />
-    </>
-  ),
+/** Each icon's shapes, plus where its glossy highlight sits (inside the shape, top-left-ish). */
+const ICONS: Record<IconName, { shape: ReactNode; shine: [number, number] }> = {
+  heart: { shape: <path d="M32 57C10 41 4 29 8 18c4-10 18-12 24 0 6-12 20-10 24 0 4 11-2 23-24 39z" />, shine: [22, 20] },
+  lips: {
+    shape: (
+      <>
+        <path d="M4 31c10-13 20-13 28-7 8-6 18-6 28 7-10 4-20 4-28 2-8 2-18 2-28-2z" />
+        <path d="M4 31c10 4 20 4 28 2 8 2 18 2 28-2-8 16-20 20-28 20S12 47 4 31z" />
+        <path className="icon-line" d="M8 31c10 3 18 3 24 1 6 2 14 2 24-1" />
+      </>
+    ),
+    shine: [19, 26],
+  },
+  butterfly: {
+    shape: (
+      <>
+        <path d="M31 30C20 6 4 8 6 22c2 10 15 12 25 8z" />
+        <path d="M33 30C44 6 60 8 58 22c-2 10-15 12-25 8z" />
+        <path d="M31 33c-10 1-21 9-17 19 4 8 15-1 17-17z" />
+        <path d="M33 33c10 1 21 9 17 19-4 8-15-1-17-17z" />
+        <rect x="29.5" y="20" width="5" height="28" rx="2.5" />
+        <path className="icon-line" d="M31 21c-2-6-6-9-9-10M33 21c2-6 6-9 9-10" />
+      </>
+    ),
+    shine: [18, 19],
+  },
+  crown: {
+    shape: (
+      <>
+        <path d="M8 46l4-28 12 14 8-20 8 20 12-14 4 28z" />
+        <rect x="8" y="46" width="48" height="8" rx="3" />
+        <circle cx="32" cy="38" r="3.5" className="icon-gem" />
+      </>
+    ),
+    shine: [17, 37],
+  },
+  heel: { shape: <path d="M5 45c0-8 7-10 13-8 11 4 19-6 27-15 4-4 10-4 13 0v6c-6 0-8 4-8 12l-2 16h-4V42c-5 5-15 9-25 9H9c-3 0-4-2-4-6z" />, shine: [27, 43] },
 }
 
 /** Glossy, chrome-pink Bratz-style icons. Decorative unless given a label. */
 export function Icon({ name, className = '', label }: { name: IconName; className?: string; label?: string }) {
   const gradient = useId()
+  const { shape, shine } = ICONS[name]
+  const [cx, cy] = shine
   return (
     <svg className={`bratz-icon icon-${name} ${className}`} viewBox="0 0 64 64" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false">
       <defs>
@@ -97,13 +102,13 @@ export function Icon({ name, className = '', label }: { name: IconName; classNam
           <stop offset="1" stopColor="#c21f7a" />
         </linearGradient>
       </defs>
-      <g fill={`url(#${gradient})`}>{ICON_PATHS[name]}</g>
-      <ellipse className="icon-shine" cx="22" cy="20" rx="6" ry="3.5" transform="rotate(-30 22 20)" />
+      <g fill={`url(#${gradient})`}>{shape}</g>
+      <ellipse className="icon-shine" cx={cx} cy={cy} rx="6" ry="3.5" transform={`rotate(-30 ${cx} ${cy})`} />
     </svg>
   )
 }
 
-export type PaperKind = 'note' | 'sticky' | 'kraft' | 'card' | 'ticket'
+export type PaperKind = 'note' | 'sticky' | 'kraft' | 'card'
 
 interface PaperProps {
   kind?: PaperKind
@@ -112,20 +117,18 @@ interface PaperProps {
   children: ReactNode
   className?: string
   /** Sticky-note color. */
-  tone?: 'pink' | 'yellow' | 'blue' | 'mint'
+  tone?: 'pink' | 'yellow'
   seed?: string
-  tape?: boolean
-  as?: 'section' | 'div' | 'article'
 }
 
-/** A scrap of paper taped into the scrapbook: notebook page, sticky note, kraft paper, cardstock, or ticket. */
-export function Paper({ kind = 'card', label, children, className = '', tone, seed = label ?? kind, tape = true, as: Tag = 'section' }: PaperProps) {
+/** A scrap of paper taped into the scrapbook: notebook page (no tape), sticky note, kraft paper, or cardstock. */
+export function Paper({ kind = 'card', label, children, className = '', tone, seed = label ?? kind }: PaperProps) {
   return (
-    <Tag className={`paper paper-${kind}${tone ? ` sticky-${tone}` : ''} ${className}`} style={tilt(seed, kind === 'sticky' ? 5 : 2.5)} aria-label={Tag === 'section' ? label : undefined}>
-      {tape && <Tape variant={Math.floor(seeded(seed, 3) * 4)} className="paper-tape" />}
+    <section className={`paper paper-${kind}${tone ? ` sticky-${tone}` : ''} ${className}`} style={tilt(seed, kind === 'sticky' ? 5 : 2.5)} aria-label={label}>
+      {kind !== 'note' && <Tape variant={Math.floor(seeded(seed, 3) * 4)} className="paper-tape" />}
       {label && <p className="paper-label">{label}</p>}
       {children}
-    </Tag>
+    </section>
   )
 }
 
