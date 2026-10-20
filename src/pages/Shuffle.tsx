@@ -8,7 +8,7 @@ import { useCloset } from '../state/ClosetContext'
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 export default function Shuffle() {
-  const { items, imageUrl } = useCloset()
+  const { items, imageUrl, canEdit } = useCloset()
   const hasDresses = items.some((i) => i.category === 'dress')
   const [shape, setShape] = useState<Shape>('separates')
   const [enabled, setEnabled] = useState<Set<Slot>>(new Set(['jacket', 'accessory']))
@@ -77,7 +77,13 @@ export default function Shuffle() {
 
       {missing.length > 0 && (
         <p className="hint">
-          Add some {missing.map((m) => CATEGORY_NAMES[m].toLowerCase()).join(' and ')} to your closet to complete the roulette. <Link to="/add">Add an outfit →</Link>
+          {canEdit ? (
+            <>
+              Add some {missing.map((m) => CATEGORY_NAMES[m].toLowerCase()).join(' and ')} to your closet to complete the roulette. <Link to="/add">Add an outfit →</Link>
+            </>
+          ) : (
+            <>No {missing.map((m) => CATEGORY_NAMES[m].toLowerCase()).join(' or ')} in the closet yet.</>
+          )}
         </p>
       )}
 

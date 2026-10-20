@@ -9,7 +9,7 @@ import NotFound from './NotFound'
 
 export default function OutfitPage() {
   const { id } = useParams()
-  const { outfits, imageUrl, itemsInOutfit, updateOutfit, deleteOutfit } = useCloset()
+  const { outfits, imageUrl, itemsInOutfit, updateOutfit, deleteOutfit, canEdit } = useCloset()
   const { notify } = useToasts()
   const navigate = useNavigate()
   const outfit = outfits.find((o) => o.id === id)
@@ -95,39 +95,41 @@ export default function OutfitPage() {
             )}
           </Paper>
 
-          <div className="form-buttons">
-            {!editing && (
-              <button type="button" className="soft-button" onClick={() => setEditing(true)}>
-                ✎ Edit date & caption
-              </button>
-            )}
-            {confirmDelete ? (
-              <span className="confirm">
-                Delete this outfit photo? (Pieces stay in your closet.)
-                <button
-                  type="button"
-                  className="danger-button"
-                  onClick={async () => {
-                    try {
-                      await deleteOutfit(outfit)
-                      navigate('/', { replace: true })
-                    } catch (e) {
-                      notify({ tone: 'error', title: 'Couldn’t delete it', message: (e as Error).message })
-                    }
-                  }}
-                >
-                  Yes, delete
+          {canEdit && (
+            <div className="form-buttons">
+              {!editing && (
+                <button type="button" className="soft-button" onClick={() => setEditing(true)}>
+                  ✎ Edit date & caption
                 </button>
-                <button type="button" className="soft-button" onClick={() => setConfirmDelete(false)}>
-                  Keep it
+              )}
+              {confirmDelete ? (
+                <span className="confirm">
+                  Delete this outfit photo? (Pieces stay in your closet.)
+                  <button
+                    type="button"
+                    className="danger-button"
+                    onClick={async () => {
+                      try {
+                        await deleteOutfit(outfit)
+                        navigate('/', { replace: true })
+                      } catch (e) {
+                        notify({ tone: 'error', title: 'Couldn’t delete it', message: (e as Error).message })
+                      }
+                    }}
+                  >
+                    Yes, delete
+                  </button>
+                  <button type="button" className="soft-button" onClick={() => setConfirmDelete(false)}>
+                    Keep it
+                  </button>
+                </span>
+              ) : (
+                <button type="button" className="soft-button" onClick={() => setConfirmDelete(true)}>
+                  Delete outfit
                 </button>
-              </span>
-            ) : (
-              <button type="button" className="soft-button" onClick={() => setConfirmDelete(true)}>
-                Delete outfit
-              </button>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </article>

@@ -4,11 +4,15 @@ import { demoStore } from '../lib/demoStore'
 import { supabase, supabaseStore } from '../lib/supabaseStore'
 import type { ClosetData, Item, ItemPatch, Outfit, OutfitItem, OutfitPatch, SaveOutfitInput } from '../lib/types'
 
+// 'signed-out' only happens when the public view isn't set up (supabase/public-view.sql not run yet):
+// then the app falls back to asking for a login before showing anything.
 type Status = 'loading' | 'signed-out' | 'ready' | 'error'
 
 interface ClosetValue {
   mode: 'cloud' | 'demo'
   status: Status
+  /** True when the owner is signed in (or in demo mode). Visitors can only look. */
+  canEdit: boolean
   error: string | null
   userEmail: string | null
   outfits: Outfit[]
@@ -55,7 +59,7 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
   const checkingLogin = session === undefined
   const signedIn = mode === 'demo' || Boolean(userId)
 
-  const load = useCallback(() => {
+  const load = useCallback((asVisitor = false) => {
     const run = ++loadRun.current
     setStatus('loading')
     setError(null)
@@ -70,6 +74,14 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
       setStatus('ready')
     })().catch((e: Error) => {
       if (run !== loadRun.current) return
+      if (asVisitor) {
+        // The public view isn't set up yet, so ask for a login like before.
+        setOutfits([])
+        setItems([])
+        setLinks([])
+        setUrls(new Map())
+        return setStatus('signed-out')
+      }
       setError(e.message)
       setStatus('error')
     })
@@ -77,16 +89,14 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (checkingLogin) return
+    // Signed out: show the public, read-only closet. Clear first so nothing from the last session lingers.
     if (!signedIn) {
-      loadRun.current++
       setOutfits([])
       setItems([])
       setLinks([])
       setUrls(new Map())
-      setStatus('signed-out')
-      return
     }
-    load()
+    load(!signedIn)
   }, [checkingLogin, signedIn, userId, load])
 
   const addUrls = async (newPaths: string[]) => {
@@ -97,6 +107,7 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
   const value: ClosetValue = {
     mode,
     status,
+    canEdit: signedIn,
     error,
     userEmail: session?.user.email ?? null,
     outfits,
@@ -111,7 +122,7 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
       const ids = new Set(links.filter((l) => l.itemId === itemId).map((l) => l.outfitId))
       return outfits.filter((o) => ids.has(o.id))
     },
-    reload: load,
+    reload: () => load(!signedIn),
     async signIn(email, password) {
       if (!supabase) return
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password })

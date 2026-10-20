@@ -1,8 +1,11 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Icon, Paper, RansomText, Sparkle } from '../components/Scrapbook'
 import { useCloset } from '../state/ClosetContext'
 
-export default function Login() {
+/** The sign-in note. `embedded` puts it inside the scrapbook (for owner-only pages) instead of a full screen. */
+export default function Login({ embedded = false, reason }: { embedded?: boolean; reason?: string }) {
+  const Wrapper = embedded ? 'div' : 'main'
   const { signIn } = useCloset()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,14 +25,19 @@ export default function Login() {
   }
 
   return (
-    <main className="login-page" id="main">
-      <Icon name="butterfly" className="float-icon s1" />
-      <Sparkle className="float-sparkle s2" />
-      <h1 className="login-logo">
-        <RansomText text="ARYN'S" />
-        <span className="logo-script">Closet</span>
-      </h1>
+    <Wrapper className={`login-page${embedded ? ' embedded' : ''}`} id={embedded ? undefined : 'main'}>
+      {!embedded && (
+        <>
+          <Icon name="butterfly" className="float-icon s1" />
+          <Sparkle className="float-sparkle s2" />
+          <h1 className="login-logo">
+            <RansomText text="ARYN'S" />
+            <span className="logo-script">Closet</span>
+          </h1>
+        </>
+      )}
       <Paper kind="sticky" tone="pink" label="members only ♡" className="login-window">
+        {reason && <p className="login-reason">{reason}</p>}
         <form onSubmit={submit}>
           <label>
             <span>Email</span>
@@ -49,6 +57,7 @@ export default function Login() {
           </button>
         </form>
       </Paper>
-    </main>
+      {embedded && <Link to="/">← Back to the lookbook</Link>}
+    </Wrapper>
   )
 }

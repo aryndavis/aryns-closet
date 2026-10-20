@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
+import OwnerOnly from './components/OwnerOnly'
 import { CraftDesk, Icon, Paper } from './components/Scrapbook'
 import AddOutfit from './pages/AddOutfit'
 import Closet from './pages/Closet'
@@ -9,6 +10,7 @@ import Lookbook from './pages/Lookbook'
 import NotFound from './pages/NotFound'
 import OutfitPage from './pages/OutfitPage'
 import Shuffle from './pages/Shuffle'
+import SignIn from './pages/SignIn'
 import { ClosetProvider, useCloset } from './state/ClosetContext'
 import { ToastProvider } from './state/Toasts'
 
@@ -47,11 +49,19 @@ function Gate() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Lookbook />} />
-        <Route path="add" element={<AddOutfit />} />
+        <Route
+          path="add"
+          element={
+            <OwnerOnly reason="Only Aryn can add outfits. Sign in to continue.">
+              <AddOutfit />
+            </OwnerOnly>
+          }
+        />
         <Route path="outfit/:id" element={<OutfitPage />} />
         <Route path="closet" element={<Closet />} />
         <Route path="item/:id" element={<ItemPage />} />
         <Route path="shuffle" element={<Shuffle />} />
+        <Route path="signin" element={<SignIn />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
