@@ -1,5 +1,7 @@
 # Aryn’s Closet ♡
 
+Live at **[closet.arynlynn.com](https://closet.arynlynn.com)**.
+
 A Bratz-meets-scrapbook digital closet: an open scrapbook on a desk, with glossy pink icons, tape, polaroids, and stickers. Upload outfit photos and they become a lookbook. Each fully visible piece of clothing is automatically cut out into a sticker and cataloged in your closet. The outfit roulette shuffles those pieces into new looks.
 
 - **Lookbook:** outfit photos as taped-in polaroids, grouped into monthly scrapbook spreads with ransom-note headings.
@@ -69,8 +71,8 @@ Never put the secret / `service_role` key in this app or repo.
 
 1. In Netlify, **Add new site → Import an existing project → GitHub** and pick this repo. `netlify.toml` already sets the build (`npm run build`, publish `dist`, Node 22) and the rule that lets links like `/closet` load directly.
 2. **Environment variables** (Site configuration → Environment variables): add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, the same values as `.env.local`. Without them the site builds in demo mode. Then **Deploys → Trigger deploy**, because the values are baked in at build time. Never add the `service_role` / secret key.
-3. **Domain:** Site configuration → Domain management → **Add a domain** (for example a subdomain like `closet.yourdomain.com`), then add the DNS record Netlify shows. HTTPS is set up automatically.
-4. **Supabase:** in Authentication → URL Configuration, set **Site URL** to the new address so any emails Supabase sends link to the right place.
+3. **Domain:** Site configuration → Domain management → **Add a domain** `closet.arynlynn.com`. The domain uses Netlify DNS, so Netlify adds the record itself. HTTPS is set up automatically.
+4. **Supabase:** in Authentication → URL Configuration, set **Site URL** to `https://closet.arynlynn.com` so any emails Supabase sends link to the right place.
 
 ## Security
 
