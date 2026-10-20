@@ -49,7 +49,15 @@ Without Supabase settings, the app runs in **demo mode**: photos are saved only 
 2. **SQL Editor → New query:** paste in [`supabase/schema.sql`](supabase/schema.sql) and run it. This creates the `outfits`, `items` and `outfit_items` tables and a **private** `closet` storage bucket, with Row Level Security so each user can only reach their own rows and photos (stored under `<user id>/…`).
 3. **Authentication → Users → Add user:** create your account, with **Auto Confirm User** checked.
 4. **Authentication → Sign In / Providers:** turn **off** “Allow new users to sign up”.
-5. Copy `.env.example` to `.env.local` and fill in the **Project URL** and **publishable key**.
+5. **SQL Editor → New query:** paste in [`supabase/public-view.sql`](supabase/public-view.sql) and run it, after creating your account. This makes the closet **public and read-only**:
+   - Anyone can browse your lookbook, closet and shuffle, photos included.
+   - Photos are served through short-lived signed links, and the bucket stays private.
+   - Only you, signed in, can add, edit or delete.
+   - It sets your account (the project's only user) as the owner.
+   - Until this is run, the app asks visitors to sign in before showing anything, as before.
+6. Copy `.env.example` to `.env.local` and fill in the **Project URL** and **publishable key**.
+
+**Signing in:** visitors can look around. You sign in with **sign in ♡** in the header. **+ Add an outfit**, editing and deleting appear once you're signed in.
 
 Never put the secret / `service_role` key in this app or repo.
 

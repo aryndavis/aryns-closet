@@ -3,7 +3,7 @@ import { useCloset } from '../state/ClosetContext'
 import { Icon, RansomText, Sparkle } from './Scrapbook'
 
 export default function Layout() {
-  const { mode, outfits, items } = useCloset()
+  const { mode, outfits, items, canEdit } = useCloset()
   return (
     <>
       <a
@@ -45,9 +45,15 @@ export default function Layout() {
               </NavLink>
               <NavLink to="/shuffle">Shuffle</NavLink>
             </nav>
-            <Link to="/add" className="cta-button">
-              + Add an outfit
-            </Link>
+            {canEdit ? (
+              <Link to="/add" className="cta-button">
+                + Add an outfit
+              </Link>
+            ) : (
+              <Link to="/signin" className="sign-in-link">
+                sign in ♡
+              </Link>
+            )}
           </header>
           <main id="main" tabIndex={-1}>
             <Outlet />

@@ -5,17 +5,23 @@ import type { Outfit } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
 
 export default function Lookbook() {
-  const { outfits, imageUrl, itemsInOutfit } = useCloset()
+  const { outfits, imageUrl, itemsInOutfit, canEdit } = useCloset()
 
   if (outfits.length === 0) {
     return (
       <div className="empty-page">
         <Paper kind="sticky" tone="pink" label="welcome to your lookbook!" className="empty-window">
           <RansomText text="NEW LOOKBOOK" className="big-ransom" />
-          <p>Snap a mirror pic, upload it, and the closet will cut out each piece into a sticker for you.</p>
-          <Link to="/add" className="cta-button">
-            + Add your first outfit
-          </Link>
+          {canEdit ? (
+            <>
+              <p>Snap a mirror pic, upload it, and the closet will cut out each piece into a sticker for you.</p>
+              <Link to="/add" className="cta-button">
+                + Add your first outfit
+              </Link>
+            </>
+          ) : (
+            <p>No outfits yet. Check back soon!</p>
+          )}
         </Paper>
         <Icon name="butterfly" className="float-icon s1" />
         <Sparkle className="float-sparkle s2" />

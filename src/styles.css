@@ -1590,3 +1590,21 @@ main,
     margin: 12px 8px 24px;
   }
 }
+
+/* ---------- Public (signed-out) view ---------- */
+
+.login-page.embedded {
+  min-height: 0;
+  padding-block: 24px 40px;
+}
+
+.login-reason {
+  margin: 0 0 12px;
+  font: 1.3rem/1.2 var(--hand);
+}
+
+.sign-in-link {
+  justify-self: end;
+  color: var(--hot-deep);
+  font: 1.5rem/1 var(--hand);
+}
