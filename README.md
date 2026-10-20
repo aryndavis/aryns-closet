@@ -12,6 +12,20 @@ A Bratz-meets-scrapbook digital closet: an open scrapbook on a desk, with glossy
 
 Built with React, TypeScript and Vite. Uses [Supabase](https://supabase.com) for login, data and private photo storage, and [Transformers.js](https://github.com/huggingface/transformers.js) for on-device clothing segmentation.
 
+## Screenshots
+
+Taken in demo mode from the production build at 1280×800, using a free [Unsplash](https://unsplash.com/photos/2beef64926a5) sample photo. Update them whenever a page's look changes (they live in `docs/screenshots/`).
+
+| Lookbook | Closet |
+| --- | --- |
+| ![Lookbook with an outfit polaroid](docs/screenshots/lookbook.jpg) | ![Closet board of clothing stickers](docs/screenshots/closet.jpg) |
+| **Add an outfit** | **Review what the scanner found** |
+| ![Add an outfit page](docs/screenshots/add-outfit.jpg) | ![Scanner results to review before saving](docs/screenshots/add-outfit-review.jpg) |
+| **Outfit page** | **Item page** |
+| ![An outfit and its pieces](docs/screenshots/outfit.jpg) | ![A single clothing item](docs/screenshots/item.jpg) |
+| **Shuffle (outfit roulette)** | |
+| ![Outfit roulette](docs/screenshots/shuffle.jpg) | |
+
 ## Run it
 
 Requires Node.js LTS and npm.
