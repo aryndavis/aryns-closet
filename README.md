@@ -14,7 +14,7 @@ Built with React, TypeScript and Vite. Uses [Supabase](https://supabase.com) for
 
 ## Screenshots
 
-Taken in demo mode from the production build at 1280×800, using a free [Unsplash](https://unsplash.com/photos/2beef64926a5) sample photo. Update them whenever a page's look changes (they live in `docs/screenshots/`).
+Taken in demo mode from the production build at 1280×800, using a free [Unsplash sample photo](https://images.unsplash.com/photo-1643310325061-2beef64926a5). Update them whenever a page's look changes (they live in `docs/screenshots/`).
 
 | Lookbook | Closet |
 | --- | --- |
