@@ -1,0 +1,17 @@
+# Netlify build settings. Security headers come from dist/_headers, which vite.config.ts writes.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # The Supabase URL and publishable key are meant to be public (they ship in the app, and row-level
+  # security protects the data), so don't fail the build when Netlify's secret scan finds them in dist/.
+  # Never put the service_role / secret key in Netlify or in this app.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY,VITE_SUPABASE_ANON_KEY"
+
+# The app handles its own routes (/loans, /book/…), so serve index.html for any path that isn't a file.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
