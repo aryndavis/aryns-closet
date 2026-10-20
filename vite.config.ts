@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
     'X-Robots-Tag': 'noindex',
   }
 
-  // Writes dist/_headers so hosts like Cloudflare Pages send the same headers in production.
+  // Writes dist/_headers so hosts like Cloudflare Pages and Netlify send the same headers in production.
   const headersFile: Plugin = {
     name: 'security-headers-file',
     apply: 'build',
