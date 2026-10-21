@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useCloset } from '../state/ClosetContext'
-import { Icon, RansomText, Sparkle } from './Scrapbook'
+import { DeskStrip, Icon, RansomText, Sparkle } from './Scrapbook'
 
 export default function Layout() {
   const { mode, outfits, items, canEdit } = useCloset()
@@ -25,6 +25,7 @@ export default function Layout() {
         </p>
       )}
       {/* The app sits on the pages of an open scrapbook lying on a desk. */}
+      <DeskStrip position="top" />
       <div className="book">
         <div className="book-pages">
           <header className="site-header">
@@ -60,6 +61,7 @@ export default function Layout() {
           </main>
         </div>
       </div>
+      <DeskStrip position="bottom" />
       <footer className="site-footer">
         <span>xoxo, aryn’s closet ♡ est. 2026</span>
       </footer>
