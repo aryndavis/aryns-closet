@@ -37,7 +37,11 @@ npm install
 npm run dev       # http://localhost:5174
 npm run build     # type-check and build to dist/
 npm run preview   # serve the production build
+npm run lint      # ESLint (TypeScript + React hooks rules)
+npm test          # unit tests (Vitest)
 ```
+
+Every pull request runs lint, type-check, tests and a build in GitHub Actions (`.github/workflows/ci.yml`).
 
 The first `dev` or `build` runs `scripts/fetch-model.mjs`. It downloads the clothing model (about 15 MB) from Hugging Face at a pinned revision, checks each file's SHA-256, and copies the ONNX Runtime WebAssembly files into `public/`. Both folders are gitignored.
 
