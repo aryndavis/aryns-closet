@@ -46,12 +46,33 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Item[]>([])
   const [links, setLinks] = useState<OutfitItem[]>([])
   const [urls, setUrls] = useState<Map<string, string>>(new Map())
+  // Bumped on every load, so a slow response (or a save that finishes after sign-out) can't land in the wrong view.
   const loadRun = useRef(0)
+  // Who the loaded closet belongs to (null = signed out), so token refreshes for the same user are ignored.
+  const currentUser = useRef<string | null | undefined>(undefined)
 
   useEffect(() => {
     if (!supabase) return
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next))
+    supabase.auth.getSession().then(({ data }) => {
+      currentUser.current ??= data.session?.user.id ?? null
+      setSession(data.session)
+    })
+    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+      const nextUser = next?.user.id ?? null
+      if (currentUser.current !== undefined && nextUser !== currentUser.current) {
+        // Signed in, out, or as someone else: show the loading screen, and clear right away so nothing
+        // from the previous view stays on screen.
+        loadRun.current++
+        setOutfits([])
+        setItems([])
+        setLinks([])
+        setUrls(new Map())
+        setError(null)
+        setStatus('loading')
+      }
+      currentUser.current = nextUser
+      setSession(next)
+    })
     return () => data.subscription.unsubscribe()
   }, [])
 
@@ -59,10 +80,10 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
   const checkingLogin = session === undefined
   const signedIn = mode === 'demo' || Boolean(userId)
 
-  const load = useCallback((asVisitor = false) => {
+  // Fetches the closet. Whatever starts a load (signing in or out, or Try again) shows the loading screen;
+  // this only fills in the result.
+  const fetchCloset = useCallback((asVisitor: boolean) => {
     const run = ++loadRun.current
-    setStatus('loading')
-    setError(null)
     ;(async () => {
       const data = await store.load()
       const signed = await store.imageUrls(paths(data))
@@ -89,19 +110,17 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (checkingLogin) return
-    // Signed out: show the public, read-only closet. Clear first so nothing from the last session lingers.
-    if (!signedIn) {
-      setOutfits([])
-      setItems([])
-      setLinks([])
-      setUrls(new Map())
-    }
-    load(!signedIn)
-  }, [checkingLogin, signedIn, userId, load])
+    // Signed out: show the public, read-only closet.
+    fetchCloset(!signedIn)
+    // Keyed on the user id, so token refreshes don't trigger a reload.
+  }, [checkingLogin, signedIn, userId, fetchCloset])
 
-  const addUrls = async (newPaths: string[]) => {
-    const signed = await store.imageUrls(newPaths)
-    setUrls((current) => new Map([...current, ...signed]))
+  // Runs a change, then applies its result only if the view hasn't changed meanwhile (for example, a sign-out).
+  const commit = async <T,>(change: Promise<T>, apply: (result: T) => void) => {
+    const run = loadRun.current
+    const result = await change
+    if (run === loadRun.current) apply(result)
+    return result
   }
 
   const value: ClosetValue = {
@@ -122,7 +141,11 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
       const ids = new Set(links.filter((l) => l.itemId === itemId).map((l) => l.outfitId))
       return outfits.filter((o) => ids.has(o.id))
     },
-    reload: () => load(!signedIn),
+    reload: () => {
+      setError(null)
+      setStatus('loading')
+      fetchCloset(!signedIn)
+    },
     async signIn(email, password) {
       if (!supabase) return
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
@@ -134,30 +157,35 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
       if (signOutError) await supabase.auth.signOut({ scope: 'local' })
     },
     async saveOutfit(input) {
-      const saved = await store.saveOutfit(input)
-      await addUrls(paths({ outfits: [saved.outfit], items: saved.items }))
-      setOutfits((list) => [saved.outfit, ...list])
-      setItems((list) => [...saved.items, ...list])
-      setLinks((list) => [...list, ...saved.links])
+      const saving = (async () => {
+        const saved = await store.saveOutfit(input)
+        return { saved, signed: await store.imageUrls(paths({ outfits: [saved.outfit], items: saved.items })) }
+      })()
+      const { saved } = await commit(saving, ({ saved, signed }) => {
+        setUrls((current) => new Map([...current, ...signed]))
+        setOutfits((list) => [saved.outfit, ...list])
+        setItems((list) => [...saved.items, ...list])
+        setLinks((list) => [...list, ...saved.links])
+      })
       return saved.outfit
     },
     async updateOutfit(id, patch) {
-      const outfit = await store.updateOutfit(id, patch)
-      setOutfits((list) => list.map((o) => (o.id === id ? outfit : o)))
+      await commit(store.updateOutfit(id, patch), (outfit) => setOutfits((list) => list.map((o) => (o.id === id ? outfit : o))))
     },
     async deleteOutfit(outfit) {
-      await store.deleteOutfit(outfit)
-      setOutfits((list) => list.filter((o) => o.id !== outfit.id))
-      setLinks((list) => list.filter((l) => l.outfitId !== outfit.id))
+      await commit(store.deleteOutfit(outfit), () => {
+        setOutfits((list) => list.filter((o) => o.id !== outfit.id))
+        setLinks((list) => list.filter((l) => l.outfitId !== outfit.id))
+      })
     },
     async updateItem(id, patch) {
-      const item = await store.updateItem(id, patch)
-      setItems((list) => list.map((i) => (i.id === id ? item : i)))
+      await commit(store.updateItem(id, patch), (item) => setItems((list) => list.map((i) => (i.id === id ? item : i))))
     },
     async deleteItem(item) {
-      await store.deleteItem(item)
-      setItems((list) => list.filter((i) => i.id !== item.id))
-      setLinks((list) => list.filter((l) => l.itemId !== item.id))
+      await commit(store.deleteItem(item), () => {
+        setItems((list) => list.filter((i) => i.id !== item.id))
+        setLinks((list) => list.filter((l) => l.itemId !== item.id))
+      })
     },
   }
 
