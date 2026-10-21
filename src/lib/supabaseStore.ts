@@ -48,13 +48,22 @@ const fail = (error: { message: string } | null) => {
 }
 
 // Supabase returns at most 1000 rows per request by default, so read whole tables page by page.
-async function selectAll<Row>(client: SupabaseClient, table: string, columns: string, orderBy: string): Promise<Row[]> {
+const PAGE_SIZE = 1000
+
+/**
+ * Every row of a table, newest first by `newestFirst`. `unique` lists columns that together identify a row:
+ * they break ties (many outfits share a day), so pages don't overlap or skip rows.
+ */
+async function selectAll<Row>(client: SupabaseClient, table: string, columns: string, newestFirst: string, unique: string[]): Promise<Row[]> {
   const rows: Row[] = []
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await client.from(table).select(columns).order(orderBy, { ascending: false }).range(from, from + 999)
+  for (;;) {
+    let query = client.from(table).select(columns, { count: 'exact' }).order(newestFirst, { ascending: false })
+    for (const column of unique) query = query.order(column)
+    const { data, error, count } = await query.range(rows.length, rows.length + PAGE_SIZE - 1)
     fail(error)
     rows.push(...((data ?? []) as unknown as Row[]))
-    if (!data || data.length < 1000) return rows
+    // Stop on the total, not on a short page: the project's "Max rows" setting can make every page shorter than PAGE_SIZE.
+    if (!data || data.length === 0 || rows.length >= (count ?? 0)) return rows
   }
 }
 
@@ -73,9 +82,9 @@ export function supabaseStore(client: SupabaseClient): ClosetStore {
   return {
     async load() {
       const [outfits, items, links] = await Promise.all([
-        selectAll<OutfitRow>(client, 'outfits', outfitColumns, 'worn_on'),
-        selectAll<ItemRow>(client, 'items', itemColumns, 'created_at'),
-        selectAll<LinkRow>(client, 'outfit_items', 'outfit_id,item_id', 'outfit_id'),
+        selectAll<OutfitRow>(client, 'outfits', outfitColumns, 'worn_on', ['id']),
+        selectAll<ItemRow>(client, 'items', itemColumns, 'created_at', ['id']),
+        selectAll<LinkRow>(client, 'outfit_items', 'outfit_id,item_id', 'outfit_id', ['item_id']),
       ])
       return { outfits: outfits.map(fromOutfit), items: items.map(fromItem), links: links.map(fromLink) }
     },

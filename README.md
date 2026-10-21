@@ -43,6 +43,12 @@ npm test          # unit tests (Vitest)
 
 Every pull request runs lint, type-check, tests and a build in GitHub Actions (`.github/workflows/ci.yml`).
 
+**What the tests cover** (`npm test`):
+- **Scanner rules** (`src/vision/masks.test.ts`): what counts as fully visible versus cut off or too small, including the exact edge boundary, noise, and shoes when the feet aren't in frame.
+- **Page ↔ scanner worker** (`src/vision/scanner.test.ts`): results, progress, worker errors and crashes, unreadable photos, and cancelling at every stage, using a fake worker.
+- **Storage contract** (`src/lib/store.contract.test.ts`): the demo store and the Supabase store pass the same suite (save, load, photo links, edit, delete, missing records). The Supabase store runs against an in-memory fake client (`src/test/fakeSupabase.ts`), including rollback when a save fails partway, and loading closets bigger than one page (the fake enforces Supabase's row limit and, like Postgres, returns tied rows in no set order).
+- **Outfit shuffle, colors and dates.**
+
 The first `dev` or `build` runs `scripts/fetch-model.mjs`. It downloads the clothing model (about 15 MB) from Hugging Face at a pinned revision, checks each file's SHA-256, and copies the ONNX Runtime WebAssembly files into `public/`. Both folders are gitignored.
 
 Without Supabase settings, the app runs in **demo mode**: photos are saved only in that browser (IndexedDB).
