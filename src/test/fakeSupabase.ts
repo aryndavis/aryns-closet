@@ -13,6 +13,8 @@ export function fakeSupabase(
     beforeInsert?: (table: string, row: Row, existing: Row[]) => string | null
     /** Foreign keys declared `on delete cascade`: deleting from a table also deletes the child rows that point at it. */
     cascades?: Record<string, { table: string; column: string }[]>
+    /** Like the project's "Max rows" API setting: no answer has more rows than this, whatever range was asked for. */
+    maxRows?: number
   } = {},
 ) {
   const tables = new Map<string, Row[]>()
@@ -40,7 +42,7 @@ export function fakeSupabase(
     let columns: string | null = null
     let wantCount = false
     let single: 'one' | 'maybe' | null = null
-    let order: { column: string; ascending: boolean }[] = []
+    const order: { column: string; ascending: boolean }[] = []
     let range: [number, number] | null = null
     const filters: ((row: Row) => boolean)[] = []
 
@@ -73,13 +75,16 @@ export function fakeSupabase(
         }
         out = matches
       } else {
-        out = [...matches]
+        // Postgres doesn't promise any order for rows the ORDER BY can't tell apart, and it can differ between
+        // requests, so shuffle first: paging that relies on a lucky order fails here too.
+        out = [...matches].sort(() => Math.random() - 0.5)
         for (const { column, ascending } of [...order].reverse()) {
           out.sort((a, b) => String(a[column]).localeCompare(String(b[column])) * (ascending ? 1 : -1))
         }
       }
       const total = out.length
       if (range) out = out.slice(range[0], range[1] + 1)
+      if (op === 'select') out = out.slice(0, options.maxRows ?? 1000)
       const data = out.map(pick)
       if (single === 'one') return data.length === 1 ? { data: data[0], error: null } : { data: null, error: { message: `expected one row, got ${data.length}` } }
       if (single === 'maybe') return { data: data[0] ?? null, error: null }
@@ -138,7 +143,6 @@ export function fakeSupabase(
         return Promise.resolve().then(run).then(resolve, reject)
       },
     }
-    order = []
     return builder
   }
 

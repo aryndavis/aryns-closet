@@ -155,6 +155,37 @@ describe('Supabase store: a failed save leaves nothing half-saved', () => {
   })
 })
 
+describe('Supabase store: big closets', () => {
+  // The fake caps every answer at `maxRows` (1,000 by default, like Supabase), so these fail if the store stops paging.
+  it.each([
+    ['the default 1,000-row limit', undefined],
+    ['a lower "Max rows" setting (every page comes back short)', 300],
+  ])('loads every outfit, piece and tag past %s, each exactly once', async (_limit, maxRows) => {
+    // Arrange: 1,200 outfits worn on just 3 days, 1,200 pieces, and 2,400 tags (many per outfit), so ties are common
+    const fake = fakeSupabase({ userId: OWNER, cascades, maxRows })
+    const id = (prefix: string, i: number) => `${prefix}${String(i).padStart(4, '0')}`
+    const outfits = Array.from({ length: 1200 }, (_, i) => ({ id: id('o', i), photo_path: `p/${i}.jpg`, worn_on: `2026-10-0${(i % 3) + 1}`, caption: '', created_at: '2026-10-01T00:00:00Z' }))
+    const items = Array.from({ length: 1200 }, (_, i) => ({ id: id('i', i), category: 'top', name: '', color_hex: null, color_name: '', cutout_path: null, notes: '', created_at: '2026-10-01T00:00:00Z' }))
+    const links = outfits.flatMap((o, i) => [
+      { outfit_id: o.id, item_id: id('i', i) },
+      { outfit_id: o.id, item_id: id('i', (i + 1) % 1200) },
+    ])
+    fake.tables.set('outfits', outfits)
+    fake.tables.set('items', items)
+    fake.tables.set('outfit_items', links)
+
+    // Act
+    const data = await supabaseStore(fake.client).load()
+
+    // Assert
+    expect(new Set(data.outfits.map((o) => o.id)).size).toBe(1200)
+    expect(data.outfits).toHaveLength(1200)
+    expect(data.items).toHaveLength(1200)
+    expect(new Set(data.links.map((l) => `${l.outfitId}/${l.itemId}`)).size).toBe(2400)
+    expect(data.links).toHaveLength(2400)
+  })
+})
+
 describe('demo store: damaged browser data', () => {
   it('starts fresh instead of crashing when saved data is malformed', async () => {
     globalThis.indexedDB = new IDBFactory()
