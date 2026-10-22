@@ -47,6 +47,7 @@ Every pull request runs lint, type-check, tests and a build in GitHub Actions (`
 - **Scanner rules** (`src/vision/masks.test.ts`): what counts as fully visible versus cut off or too small, including the exact edge boundary, noise, and shoes when the feet aren't in frame.
 - **Page ↔ scanner worker** (`src/vision/scanner.test.ts`): results, progress, worker errors and crashes, unreadable photos, and cancelling at every stage, using a fake worker.
 - **Storage contract** (`src/lib/store.contract.test.ts`): the demo store and the Supabase store pass the same suite (save, load, photo links, edit, delete, missing records). The Supabase store runs against an in-memory fake client (`src/test/fakeSupabase.ts`), including rollback when a save fails partway, and loading closets bigger than one page (the fake enforces Supabase's row limit and, like Postgres, returns tied rows in no set order).
+- **Photo dates** (`src/lib/photoDate.ts`): reading the date taken from JPEG, PNG and WebP metadata in both byte orders, falling back sensibly, and ignoring future, blank or impossible dates and broken files without errors.
 - **Outfit shuffle, colors and dates.**
 
 The first `dev` or `build` runs `scripts/fetch-model.mjs`. It downloads the clothing model (about 15 MB) from Hugging Face at a pinned revision, checks each file's SHA-256, and copies the ONNX Runtime WebAssembly files into `public/`. Both folders are gitignored.
@@ -95,7 +96,7 @@ Never put the secret / `service_role` key in this app or repo.
 ## Security
 
 - **Row Level Security** on every table and on the storage bucket: only the signed-in owner can read, add or delete their outfits, items and photos. Signed-out visitors get nothing. The policies were tested against Postgres (20 checks).
-- **Photos:** stored in a private bucket and shown through short-lived signed URLs. Photos are re-encoded before upload, which strips EXIF metadata such as GPS location, and are capped at 1600px.
+- **Photos:** stored in a private bucket and shown through short-lived signed URLs. Photos are re-encoded before upload, which strips EXIF metadata such as GPS location, and are capped at 1600px. Before that, the app reads only the date the photo was taken (`src/lib/photoDate.ts`) to fill in "Worn on"; you can change it, and nothing else from the metadata is kept.
 - **Content Security Policy:** the app may only load its own files and talk to your Supabase project.
   - `'wasm-unsafe-eval'` allows compiling the model's WebAssembly; JavaScript `eval` is still blocked.
   - The scanner's worker can only fetch the three known model files.

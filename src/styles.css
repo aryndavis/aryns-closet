@@ -175,6 +175,13 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
+.date-source {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
 .hint {
   margin: 0 0 16px;
   font: 1.05rem var(--type);
