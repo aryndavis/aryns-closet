@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Icon, Paper, Polaroid, RansomText } from '../components/Scrapbook'
 import { today } from '../lib/dates'
 import { preparePhoto } from '../lib/images'
+import { photoTakenOn } from '../lib/photoDate'
 import { CATEGORIES, CATEGORY_NAMES, type Category } from '../lib/types'
 import { useCloset } from '../state/ClosetContext'
 import { useToasts } from '../state/Toasts'
@@ -30,6 +31,8 @@ export default function AddOutfit() {
   const [photo, setPhoto] = useState<Blob | null>(null)
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [wornOn, setWornOn] = useState(today())
+  /** True while the date is the one read from the photo (so the form can say so). */
+  const [dateFromPhoto, setDateFromPhoto] = useState(false)
   const [caption, setCaption] = useState('')
   const [saving, setSaving] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -60,8 +63,10 @@ export default function AddOutfit() {
     const controller = new AbortController()
     scanAbort.current = controller
     let prepared: Blob
+    let taken: string | null
     try {
-      prepared = await preparePhoto(file)
+      // Read the date from the original file: preparing the photo strips its metadata.
+      ;[prepared, taken] = await Promise.all([preparePhoto(file), photoTakenOn(file, today())])
     } catch (e) {
       if (run === scanRun.current) notify({ tone: 'error', title: 'Couldn’t use that photo', message: (e as Error).message })
       return
@@ -69,6 +74,8 @@ export default function AddOutfit() {
     // Another photo may have been picked while this one was being prepared.
     if (run !== scanRun.current) return
     setPhoto(prepared)
+    setWornOn(taken ?? today())
+    setDateFromPhoto(taken !== null)
     setDrafts([])
     setStep({ name: 'scanning', progress: null })
     try {
@@ -204,7 +211,17 @@ export default function AddOutfit() {
             {photoUrl && <Polaroid src={photoUrl} alt="Your outfit photo" seed="review" caption={caption || 'fit check'} />}
             <label>
               <span>Worn on</span>
-              <input type="date" value={wornOn} max={today()} onChange={(e) => setWornOn(e.target.value)} required />
+              <input
+                type="date"
+                value={wornOn}
+                max={today()}
+                onChange={(e) => {
+                  setWornOn(e.target.value)
+                  setDateFromPhoto(false)
+                }}
+                required
+              />
+              {dateFromPhoto && <small className="date-source">📸 from your photo</small>}
             </label>
             <label>
               <span>Caption</span>
