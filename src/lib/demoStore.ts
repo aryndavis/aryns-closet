@@ -123,5 +123,15 @@ export function demoStore(): ClosetStore {
       await write({ ...data, items: data.items.filter((i) => i.id !== item.id), links: data.links.filter((l) => l.itemId !== item.id) })
       if (item.cutoutPath) await removeBlob(item.cutoutPath)
     },
+
+    async removeCutout(item) {
+      const data = await read()
+      const existing = data.items.find((i) => i.id === item.id)
+      if (!existing) throw new Error('Item not found.')
+      const updated = { ...existing, cutoutPath: null }
+      await write({ ...data, items: data.items.map((i) => (i.id === item.id ? updated : i)) })
+      if (item.cutoutPath) await removeBlob(item.cutoutPath)
+      return updated
+    },
   }
 }

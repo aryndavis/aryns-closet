@@ -84,4 +84,6 @@ export interface ClosetStore {
   deleteOutfit(outfit: Outfit): Promise<void>
   updateItem(id: string, patch: ItemPatch): Promise<Item>
   deleteItem(item: Item): Promise<void>
+  /** Deletes a piece's cutout (say, the scanner made a mess of it); the piece then shows as a color swatch. */
+  removeCutout(item: Item): Promise<Item>
 }

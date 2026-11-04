@@ -170,5 +170,12 @@ export function supabaseStore(client: SupabaseClient): ClosetStore {
       fail((await client.from('items').delete().eq('id', item.id)).error)
       if (item.cutoutPath) await client.storage.from(BUCKET).remove([item.cutoutPath])
     },
+
+    async removeCutout(item) {
+      const { data, error } = await client.from('items').update({ cutout_path: null }).eq('id', item.id).select(itemColumns).single()
+      fail(error)
+      if (item.cutoutPath) await client.storage.from(BUCKET).remove([item.cutoutPath])
+      return fromItem(data as unknown as ItemRow)
+    },
   }
 }

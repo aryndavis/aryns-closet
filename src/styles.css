@@ -119,6 +119,18 @@ main {
   font-weight: 600;
 }
 
+/* "Use a color swatch instead", under an item's edit form. */
+.cutout-fix {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 2px dashed rgba(43, 29, 47, 0.35);
+}
+
+.cutout-fix p {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+}
+
 label {
   display: grid;
   gap: 4px;
@@ -1389,7 +1401,6 @@ main,
   .strip-butterfly { left: 34%; top: 2px; width: 32px; rotate: -14deg; }
   .strip-glue { left: 56%; top: -16px; width: 24px; rotate: 78deg; }
   .strip-scrapbook { right: 0; top: 14px; width: 88px; rotate: -8deg; }
-}
 }
 
 /* ---------- Scanning ribbon ---------- */

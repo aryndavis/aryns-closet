@@ -9,7 +9,7 @@ import NotFound from './NotFound'
 
 export default function ItemPage() {
   const { id } = useParams()
-  const { items, imageUrl, outfitsWithItem, updateItem, deleteItem, canEdit } = useCloset()
+  const { items, imageUrl, outfitsWithItem, updateItem, deleteItem, removeCutout, canEdit } = useCloset()
   const { notify } = useToasts()
   const navigate = useNavigate()
   const item = items.find((i) => i.id === id)
@@ -17,6 +17,7 @@ export default function ItemPage() {
   const [category, setCategory] = useState<Category>(item?.category ?? 'top')
   const [notes, setNotes] = useState(item?.notes ?? '')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmSwatch, setConfirmSwatch] = useState(false)
 
   if (!item) return <NotFound what="item" />
   const worn = outfitsWithItem(item.id).sort((a, b) => b.wornOn.localeCompare(a.wornOn))
@@ -109,6 +110,40 @@ export default function ItemPage() {
                   )}
                 </div>
               </form>
+              {item.cutoutPath && (
+                <div className="cutout-fix">
+                  {confirmSwatch ? (
+                    <span className="confirm">
+                      Delete this cutout and show a color swatch instead?
+                      <button
+                        type="button"
+                        className="danger-button"
+                        onClick={async () => {
+                          try {
+                            await removeCutout(item)
+                            setConfirmSwatch(false)
+                            notify({ tone: 'info', title: 'Cutout removed', message: 'This piece shows as a color swatch now.' })
+                          } catch (e) {
+                            notify({ tone: 'error', title: 'Couldn’t remove the cutout', message: (e as Error).message })
+                          }
+                        }}
+                      >
+                        Yes, use a swatch
+                      </button>
+                      <button type="button" className="soft-button" onClick={() => setConfirmSwatch(false)}>
+                        Keep it
+                      </button>
+                    </span>
+                  ) : (
+                    <>
+                      <p>If the scanner made a mess of this cutout (dark clothes on a dark background are tricky), you can show a color swatch instead.</p>
+                      <button type="button" className="soft-button" onClick={() => setConfirmSwatch(true)}>
+                        Use a color swatch instead
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </Paper>
           )}
         </div>

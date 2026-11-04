@@ -49,7 +49,7 @@ export default function Closet() {
             return (
               <li key={item.id}>
                 <Link to={`/item/${item.id}`} className="board-item">
-                  <Sticker item={item} src={imageUrl(item.cutoutPath)} />
+                  <Sticker decorative item={item} src={imageUrl(item.cutoutPath)} />
                   <span className="label-tape">{item.name || CATEGORY_LABELS[item.category]}</span>
                   <span className="worn">
                     worn {worn}× {item.colorHex && <i className="dot" style={{ background: item.colorHex }} aria-hidden="true" />}

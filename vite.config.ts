@@ -61,7 +61,18 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: { exclude: ['@huggingface/transformers'] },
     worker: { format: 'es' },
-    build: { assetsInlineLimit: 0 },
+    build: {
+      assetsInlineLimit: 0,
+      rollupOptions: {
+        output: {
+          // Libraries change less often than the app, so they get their own files and stay cached between deploys.
+          manualChunks(id) {
+            if (id.includes('/node_modules/@supabase/')) return 'supabase'
+            if (/\/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(id)) return 'react'
+          },
+        },
+      },
+    },
     server: { port: 5174, strictPort: true, headers: devHeaders },
     preview: { port: 4174, headers: securityHeaders },
   }

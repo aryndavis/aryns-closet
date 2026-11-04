@@ -1,8 +1,8 @@
+import { lazy } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import OwnerOnly from './components/OwnerOnly'
 import { CraftDesk, Icon, Paper } from './components/Scrapbook'
-import AddOutfit from './pages/AddOutfit'
 import Closet from './pages/Closet'
 import ItemPage from './pages/ItemPage'
 import Login from './pages/Login'
@@ -13,6 +13,9 @@ import Shuffle from './pages/Shuffle'
 import SignIn from './pages/SignIn'
 import { ClosetProvider, useCloset } from './state/ClosetContext'
 import { ToastProvider } from './state/Toasts'
+
+// Only the owner adds outfits, so the page and its scanner load on first use and visitors don't download them.
+const AddOutfit = lazy(() => import('./pages/AddOutfit'))
 
 /** Shows the login, loading, or error screen until the closet is ready. */
 function Gate() {
