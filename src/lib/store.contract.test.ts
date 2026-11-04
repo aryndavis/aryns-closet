@@ -121,6 +121,18 @@ describe.each(implementations)('%s', (_name, makeStore) => {
     expect((await store.imageUrls([items[0].cutoutPath!])).size).toBe(0)
   })
 
+  it('removing a cutout keeps the piece and its tags, and deletes the image', async () => {
+    const { items } = await store.saveOutfit(outfitInput())
+
+    const updated = await store.removeCutout(items[0])
+    const data = await store.load()
+
+    expect(updated.cutoutPath).toBeNull()
+    expect(data.items.find((i) => i.id === items[0].id)).toMatchObject({ cutoutPath: null, name: items[0].name, colorHex: items[0].colorHex })
+    expect(data.links.map((l) => l.itemId).sort()).toEqual(items.map((i) => i.id).sort())
+    expect((await store.imageUrls([items[0].cutoutPath!])).size).toBe(0)
+  })
+
   it('refuses to edit an outfit or piece that does not exist', async () => {
     await expect(store.updateOutfit('no-such-outfit', { wornOn: '2026-10-18', caption: '' })).rejects.toThrow()
     await expect(store.updateItem('no-such-item', { category: 'top', name: '', notes: '' })).rejects.toThrow()

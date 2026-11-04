@@ -97,7 +97,7 @@ export default function Shuffle() {
                 <div className="reel">
                   {item ? (
                     <Link to={`/item/${item.id}`} className="reel-item">
-                      <Sticker item={item} src={imageUrl(item.cutoutPath)} />
+                      <Sticker decorative item={item} src={imageUrl(item.cutoutPath)} />
                       <span>{item.name || CATEGORY_NAMES[item.category]}</span>
                     </Link>
                   ) : (

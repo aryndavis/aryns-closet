@@ -10,6 +10,7 @@ A Bratz-meets-scrapbook digital closet: an open scrapbook on a desk, with glossy
   - Runs entirely in your browser (see below).
 - **Review before saving:** fix categories (the scanner can't tell a jacket from a top), rename pieces, skip any, or say "this is already in my closet" to tag an existing item instead of duplicating it.
 - **Closet:** every piece as a sticker, filtered by category, with how many times you've worn it.
+- **Fix a bad cutout:** if the scanner makes a mess of a piece (dark clothes on a dark background are the usual culprit), swap its sticker for a color swatch from the item page.
 - **Outfit roulette:** a random top + bottom (or dress) + shoes, optionally with a jacket and an accessory. Lock pieces you like and shuffle the rest.
 
 Built with React, TypeScript and Vite. Uses [Supabase](https://supabase.com) for login, data and private photo storage, and [Transformers.js](https://github.com/huggingface/transformers.js) for on-device clothing segmentation.
@@ -22,8 +23,8 @@ Taken in demo mode from the production build at 1280×800, using a free [Unsplas
 | --- | --- |
 | ![Lookbook with an outfit polaroid](docs/screenshots/lookbook.jpg) | ![Closet board of clothing stickers](docs/screenshots/closet.jpg) |
 | **Add an outfit** | **Review what the scanner found** |
-| ![Add an outfit page](docs/screenshots/add-outfit.jpg) | ![Scanner results to review before saving](docs/screenshots/add-outfit-review.jpg) |
-| **Outfit page** | **Item page** |
+| ![Add an outfit page](docs/screenshots/add-outfit.jpg) | ![Scanner results to review before saving, with "Worn on" filled in from the photo](docs/screenshots/add-outfit-review.jpg) |
+| **Outfit page** | **Item page (with the color-swatch fix)** |
 | ![An outfit and its pieces](docs/screenshots/outfit.jpg) | ![A single clothing item](docs/screenshots/item.jpg) |
 | **Shuffle (outfit roulette)** | |
 | ![Outfit roulette](docs/screenshots/shuffle.jpg) | |

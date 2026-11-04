@@ -154,11 +154,26 @@ export function Polaroid({ src, alt, caption, seed, className = '', children }: 
 }
 
 /** A clothing item as a die-cut sticker. Falls back to a color swatch if there's no cut-out image. */
-export function Sticker({ item, src, size = 'md' }: { item: Pick<Item, 'name' | 'category' | 'colorHex' | 'id'>; src?: string; size?: 'sm' | 'md' | 'lg' }) {
+/** A clothing cutout (or a color swatch until there is one). Pass `decorative` when the item's name is already written next to it, so screen readers don't hear it twice. */
+export function Sticker({
+  item,
+  src,
+  size = 'md',
+  decorative = false,
+}: {
+  item: Pick<Item, 'name' | 'category' | 'colorHex' | 'id'>
+  src?: string
+  size?: 'sm' | 'md' | 'lg'
+  decorative?: boolean
+}) {
   const label = item.name || CATEGORY_LABELS[item.category]
   return (
     <span className={`sticker sticker-${size}`} style={tilt(item.id, 10)}>
-      {src ? <img src={src} alt={label} loading="lazy" /> : <span className="sticker-swatch" style={{ background: item.colorHex ?? '#f5b5d8' }} role="img" aria-label={label} />}
+      {src ? (
+        <img src={src} alt={decorative ? '' : label} loading="lazy" />
+      ) : (
+        <span className="sticker-swatch" style={{ background: item.colorHex ?? '#f5b5d8' }} {...(decorative ? { 'aria-hidden': true } : { role: 'img', 'aria-label': label })} />
+      )}
     </span>
   )
 }

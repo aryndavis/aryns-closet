@@ -30,6 +30,7 @@ interface ClosetValue {
   deleteOutfit: (outfit: Outfit) => Promise<void>
   updateItem: (id: string, patch: ItemPatch) => Promise<void>
   deleteItem: (item: Item) => Promise<void>
+  removeCutout: (item: Item) => Promise<void>
 }
 
 const ClosetContext = createContext<ClosetValue | null>(null)
@@ -186,6 +187,9 @@ export function ClosetProvider({ children }: { children: ReactNode }) {
         setItems((list) => list.filter((i) => i.id !== item.id))
         setLinks((list) => list.filter((l) => l.itemId !== item.id))
       })
+    },
+    async removeCutout(item) {
+      await commit(store.removeCutout(item), (updated) => setItems((list) => list.map((i) => (i.id === item.id ? updated : i))))
     },
   }
 

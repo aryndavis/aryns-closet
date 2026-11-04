@@ -36,6 +36,7 @@ export default function Login({ embedded = false, reason }: { embedded?: boolean
           </h1>
         </>
       )}
+      {embedded && <h1 className="sr-only">Sign in</h1>}
       <Paper kind="sticky" tone="pink" label="members only ♡" className="login-window">
         {reason && <p className="login-reason">{reason}</p>}
         <form onSubmit={submit}>

@@ -83,7 +83,7 @@ export default function OutfitPage() {
                 {pieces.map((item) => (
                   <li key={item.id}>
                     <Link to={`/item/${item.id}`}>
-                      <Sticker item={item} src={imageUrl(item.cutoutPath)} size="sm" />
+                      <Sticker decorative item={item} src={imageUrl(item.cutoutPath)} size="sm" />
                       <span>
                         <strong>{item.name || CATEGORY_NAMES[item.category]}</strong>
                         <small>{CATEGORY_NAMES[item.category]}</small>
