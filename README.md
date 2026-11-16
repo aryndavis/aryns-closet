@@ -68,6 +68,7 @@ Without Supabase settings, the app runs in **demo mode**: photos are saved only 
    - It sets your account (the project's only user) as the owner.
    - Until this is run, the app asks visitors to sign in before showing anything, as before.
 6. Copy `.env.example` to `.env.local` and fill in the **Project URL** and **publishable key**.
+7. **GitHub → Settings → Secrets and variables → Actions:** add the same two values as `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Free Supabase projects pause after a week without activity, so [a scheduled workflow](.github/workflows/supabase-keepalive.yml) reads one row of public data twice a week to keep the project awake.
 
 **Signing in:** visitors can look around. You sign in with **sign in ♡** in the header. **+ Add an outfit**, editing and deleting appear once you're signed in.
 
